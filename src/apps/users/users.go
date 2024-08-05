@@ -8,6 +8,7 @@ import (
 
 type User struct {
 	ID        string    `db:"id"`
+	Username  string    `db:"username"`
 	CreatedAt time.Time `db:"created_at"`
 }
 
@@ -21,4 +22,10 @@ func (*User) TableName() string {
 
 func (u *User) Scan(rows *sqlx.Rows) error {
 	return rows.StructScan(u)
+}
+
+func (u *User) Associations() []interface{} {
+	return []interface{}{
+		&Experience{},
+	}
 }

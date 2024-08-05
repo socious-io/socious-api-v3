@@ -6,4 +6,5 @@ type Model interface {
 	Columns() []string
 	TableName() string
 	Scan(rows *sqlx.Rows) error
+	Associations() []interface{}
 }

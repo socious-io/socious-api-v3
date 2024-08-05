@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"socious/src/config"
 
@@ -11,7 +12,8 @@ import (
 
 func main() {
 	config.Init("config.yml")
-	m, err := migrate.New("file://src/sql/migrations", config.Config.Database)
+	fmt.Println(config.Config)
+	m, err := migrate.New(config.Config.MigrationsFile, config.Config.Database)
 	if err != nil {
 		log.Fatal(err)
 	}

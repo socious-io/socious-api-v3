@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -23,50 +22,39 @@ func Create(ctx context.Context, queryName string, model Model) (sql.Result, err
 	return ExecuteQuery(ctx, queryName, extractFields(model)...)
 }
 
-// Get retrieves a single record from the database
-func Get(ctx context.Context, queryName string, dest Model, args ...interface{}) error {
-	rows, err := QueryRows(ctx, queryName, args...)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		if err := dest.Scan(rows); err != nil {
-			return err
+// Get retrieves multiple records from the database with pagination
+func Get(ctx context.Context, queryName string, dest interface{}, ids ...string) error {
+	_, err := cb.Execute(func() (interface{}, error) {
+		q, err := LoadQuery(queryName)
+		if err != nil {
+			return nil, fmt.Errorf("could not load query: %v", err)
 		}
-	}
-	return rows.Err()
-}
 
-// GetAll retrieves multiple records from the database with pagination
-func GetAll(ctx context.Context, queryName string, dest interface{}, limit, offset uint16, args ...interface{}) error {
-	if limit > 100 {
-		limit = 100
-	}
-	args = append(args, limit, offset)
-	rows, err := QueryRows(ctx, queryName, args...)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	destValue := reflect.ValueOf(dest)
-	if destValue.Kind() != reflect.Ptr || destValue.Elem().Kind() != reflect.Slice {
-		return errors.New("destination must be a pointer to a slice")
-	}
-	sliceValue := destValue.Elem()
-	for rows.Next() {
-		elem := reflect.New(sliceValue.Type().Elem()).Interface()
-		model, ok := elem.(Model)
-		if !ok {
-			return errors.New("destination slice elements must implement Model interface")
-		}
-		if err := model.Scan(rows); err != nil {
-			return err
-		}
-		sliceValue.Set(reflect.Append(sliceValue, reflect.ValueOf(model).Elem()))
-	}
+		db := GetDB()
 
-	return rows.Err()
+		if db == nil {
+			return nil, fmt.Errorf("database not connected")
+		}
+
+		query, args, err := sqlx.In(q, ids)
+		if err != nil {
+			return nil, err
+		}
+
+		query = db.Rebind(query)
+		destType := reflect.TypeOf(dest)
+		if destType.Kind() == reflect.Ptr && destType.Elem().Kind() == reflect.Slice {
+			if err := db.Select(dest, query, args...); err != nil {
+				return nil, err
+			}
+		} else {
+			if err := db.Get(dest, query, args...); err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	})
+	return err
 }
 
 // Update updates an existing record in the database
@@ -145,6 +133,24 @@ func QueryRows(ctx context.Context, queryName string, args ...interface{}) (*sql
 	}
 
 	return rows.(*sqlx.Rows), nil
+}
+
+// QuerSelect is a general function to execute a read operation that returns multiple rows with a circuit breaker
+func QuerySelect(queryName string, dest interface{}, args ...interface{}) error {
+	_, err := cb.Execute(func() (interface{}, error) {
+		query, err := LoadQuery(queryName)
+		if err != nil {
+			return nil, fmt.Errorf("could not load query: %v", err)
+		}
+
+		db := GetDB()
+
+		if db == nil {
+			return nil, fmt.Errorf("database not connected")
+		}
+		return nil, db.Select(dest, query, args...)
+	})
+	return err
 }
 
 // extractFields extracts the fields from a struct and returns them as a slice of interface{}

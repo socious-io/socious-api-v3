@@ -9,9 +9,10 @@ import (
 var Config *ConfigType
 
 type ConfigType struct {
-	Port uint 
-	Database string
-	SqlDir string
+	Port           uint
+	Database       string
+	SqlDir         string
+	MigrationsFile string `yaml:"migrations"`
 }
 
 func Init(filename string) (*ConfigType, error) {
