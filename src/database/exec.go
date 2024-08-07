@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -23,11 +24,23 @@ func Create(ctx context.Context, queryName string, model Model) (sql.Result, err
 }
 
 // Get retrieves multiple records from the database with pagination
-func Get(ctx context.Context, queryName string, dest interface{}, ids ...string) error {
+func Get(dest interface{}, ids ...string) error {
 	_, err := cb.Execute(func() (interface{}, error) {
+		isSlice := false
+		var queryName string
+		switch v := dest.(type) {
+		case Model:
+			queryName = v.FetchQuery()
+		case []Model:
+			queryName = v[0].FetchQuery()
+			isSlice = true
+		default:
+			log.Fatal("invalid type to cast")
+		}
+
 		q, err := LoadQuery(queryName)
 		if err != nil {
-			return nil, fmt.Errorf("could not load query: %v", err)
+			log.Fatal(err)
 		}
 
 		db := GetDB()
@@ -42,8 +55,8 @@ func Get(ctx context.Context, queryName string, dest interface{}, ids ...string)
 		}
 
 		query = db.Rebind(query)
-		destType := reflect.TypeOf(dest)
-		if destType.Kind() == reflect.Ptr && destType.Elem().Kind() == reflect.Slice {
+
+		if isSlice {
 			if err := db.Select(dest, query, args...); err != nil {
 				return nil, err
 			}

@@ -13,6 +13,7 @@ type ConfigType struct {
 	Database       string
 	SqlDir         string
 	MigrationsFile string `yaml:"migrations"`
+	Secret         string
 }
 
 func Init(filename string) (*ConfigType, error) {
