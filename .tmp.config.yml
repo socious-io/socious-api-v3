@@ -1,5 +1,6 @@
 port: 3000
-database: postgres://socious:passwd@localhost:5432/sociousprod?sslmode=disable
-sqldir: src/sql
-migrations: file://src/sql/migrations
+database: 
+  url: postgresql://socious:passwd@localhost:5432/socious?sslmode=disable
+  sqldir: src/sql
+  migrations: src/sql/migrations
 secret: secret
