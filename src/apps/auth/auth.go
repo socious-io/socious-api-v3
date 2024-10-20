@@ -40,15 +40,3 @@ func GenerateFullTokens(id string) (map[string]any, error) {
 		"token_type":    "Bearer",
 	}, nil
 }
-
-func GenerateSSOToken(id string) (map[string]string, error) {
-	accessToken, err := GenerateToken(id, false)
-	if err != nil {
-		return nil, err
-	}
-
-	return map[string]string{
-		"access_token": accessToken,
-		"token_type":   "Bearer",
-	}, nil
-}

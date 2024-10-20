@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"fmt"
 	"socious/src/config"
 	"time"
 
@@ -11,6 +12,13 @@ import (
 type Claims struct {
 	ID      string `json:"id"`
 	Refresh bool   `json:"refresh"`
+	jwt.RegisteredClaims
+}
+
+type SSOClaims struct {
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
 	jwt.RegisteredClaims
 }
 
@@ -26,6 +34,22 @@ func GenerateToken(id string, refresh bool) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.Config.Secret))
+}
+
+func GenerateSSOToken(email, firstName, lastName string) (string, error) {
+	expirationTime := time.Now().Add(24 * time.Hour)
+	claims := &SSOClaims{
+		Email:     email,
+		FirstName: firstName,
+		LastName:  lastName,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+		},
+	}
+
+	fmt.Println("config.Config.SSOSecret", config.Config.SSO.Secret)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(config.Config.SSO.Secret))
 }
 
 func VerifyToken(tokenString string) (*Claims, error) {

@@ -1,7 +1,6 @@
 package views
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"socious/src/apps/auth"
@@ -36,50 +35,46 @@ func ssoGroup(router *gin.Engine) {
 		}
 
 		u, err := models.GetUserByEmail(loginForm.Email)
-		if err != nil {
-			fmt.Println("GetUserByEmail", err.Error())
+		if err != nil || u == nil {
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{
 				"redirect_url": redirect_url,
-				"error":        "email/password not match",
+				"error":        "Error: User couldn't be found/is not registered on Socious",
 			})
 			return
 		}
 		if u.Password == nil {
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{
 				"redirect_url": redirect_url,
-				"error":        "email/password not match",
+				"error":        "Error: email/password not match",
 			})
 			return
 		}
 		if err := auth.CheckPasswordHash(loginForm.Password, *u.Password); err != nil {
-			fmt.Println(err.Error())
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{
 				"redirect_url": redirect_url,
-				"error":        "email/password not match",
+				"error":        "Error: email/password not match",
 			})
 			return
 		}
 
-		tokens, err := auth.GenerateSSOToken(u.ID.String())
+		token, err := auth.GenerateSSOToken(u.Email, *u.FirstName, *u.LastName)
 		if err != nil {
-			fmt.Println(err.Error())
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{
 				"redirect_url": redirect_url,
-				"error":        err.Error(),
+				"error":        "Error: " + err.Error(),
 			})
 			return
 		}
-		fmt.Println(tokens)
+
 		//Add redirect_url to query params
 		parsedURL, err := url.Parse(redirect_url)
 		if err != nil {
-			fmt.Println("Error parsing URL:", err)
 			return
 		}
 		queryParams := parsedURL.Query()
-		queryParams.Add("access_token", tokens["access_token"])
+		queryParams.Add("access_token", token)
 		parsedURL.RawQuery = queryParams.Encode()
-		c.Redirect(http.StatusOK, parsedURL.String())
+		c.Redirect(http.StatusSeeOther, parsedURL.String())
 
 		return
 	})
