@@ -9,11 +9,19 @@ import (
 var Config *ConfigType
 
 type ConfigType struct {
-	Port           uint
-	Database       string
-	SqlDir         string
-	MigrationsFile string `yaml:"migrations"`
-	Secret         string
+	Env    string `mapstructure:"env"`
+	Port   int    `mapstructure:"port"`
+	Debug  bool   `mapstructure:"debug"`
+	Secret string `mapstructure:"secret"`
+	SSO    struct {
+		Secret string `mapstructure:"secret"`
+	} `mapstructure:"sso"`
+	Host     string `mapstructure:"host"`
+	Database struct {
+		URL        string `mapstructure:"url"`
+		SqlDir     string `mapstructure:"sqldir"`
+		Migrations string `mapstructure:"migrations"`
+	} `mapstructure:"database"`
 }
 
 func Init(filename string) (*ConfigType, error) {
