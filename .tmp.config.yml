@@ -9,3 +9,15 @@ database:
   url: postgresql://socious:passwd@localhost:5432/socious?sslmode=disable
   sqldir: src/sql
   migrations: src/sql/migrations
+s3:
+  access_key_id: access_key_id
+  secret_access_key: secret_access_key
+  default_region: ap-northeast-1
+  bucket: bucket
+  cdn_url: https://bucket.s3.default_region.amazonaws.com
+cors:
+  origins:
+    - '*'
+nats:
+  url: nats://127.0.0.1:4222
+  secret: secret
