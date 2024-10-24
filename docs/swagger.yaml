@@ -1,0 +1,23 @@
+openapi: 3.0.0
+info:
+  title: Socious-API
+  version: 2.2.6
+servers:
+  - url: https://dev.socious.io/api/v3/
+    description: Development server (uses test data)
+  - url: https://socious.io/api/v3/
+    description: Production server (uses live data)
+  - url: http://localhost:3000
+    description: Local server (for development perposes)
+paths:
+  /example:
+    get:
+      summary: Example
+      description: Example desc
+      tags:
+        - Tag
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:

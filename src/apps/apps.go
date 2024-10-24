@@ -3,14 +3,18 @@ package apps
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"socious/src/apps/views"
 	"socious/src/config"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-openapi/runtime/middleware"
 )
 
-func Serve() {
+func Init() *gin.Engine {
+
 	router := gin.Default()
 
 	router.Use(func(c *gin.Context) {
@@ -20,7 +24,26 @@ func Serve() {
 		c.Next()
 	})
 
+	//Cors
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     config.Config.Cors.Origins,
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"*"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
 	views.Init(router)
 
-	router.Run(fmt.Sprintf("127.0.0.1:%d", config.Config.Port))
+	//docs
+	opts := middleware.SwaggerUIOpts{SpecURL: "/swagger.yaml"}
+	router.GET("/docs", gin.WrapH(middleware.SwaggerUI(opts, nil)))
+	router.GET("/swagger.yaml", gin.WrapH(http.FileServer(http.Dir("./docs"))))
+
+	return router
+}
+
+func Serve() {
+	router := Init()
+	router.Run(fmt.Sprintf("0.0.0.0:%d", config.Config.Port))
 }
