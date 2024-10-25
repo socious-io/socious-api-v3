@@ -114,7 +114,7 @@ jobs:
         run: |
           docker pull ${{ steps.meta.outputs.tags }}
           docker ps -qa --filter "name=socious-api-v3" | grep -q . && docker stop socious-api-v3 && docker rm -fv socious-api-v3
-          docker run -d --restart always -p 5062:5062 -h socious-api-v3 --network sociousapiv3_default --name socious-api-v3 ${{ steps.meta.outputs.tags }}
+          docker run -d --restart always -p 5063:5063 -h socious-api-v3 --network sociousapiv3_default --name socious-api-v3 ${{ steps.meta.outputs.tags }}
 
       # - name: Extract Docker metadata
       #   id: meta-worker
