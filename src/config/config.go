@@ -22,6 +22,20 @@ type ConfigType struct {
 		SqlDir     string `mapstructure:"sqldir"`
 		Migrations string `mapstructure:"migrations"`
 	} `mapstructure:"database"`
+	S3 struct {
+		AccessKeyId     string `mapstructure:"access_key_id"`
+		SecretAccessKey string `mapstructure:"secret_access_key"`
+		DefaultRegion   string `mapstructure:"default_region"`
+		Bucket          string `mapstructure:"bucket"`
+		CDNUrl          string `mapstructure:"cdn_url"`
+	} `mapstructure:"s3"`
+	Cors struct {
+		Origins []string `mapstructure:"origins"`
+	} `mapstructure:"cors"`
+	Nats struct {
+		Url   string `mapstructure:"url"`
+		Token string `mapstructure:"token"`
+	} `mapstructure:"nats"`
 }
 
 func Init(filename string) (*ConfigType, error) {
