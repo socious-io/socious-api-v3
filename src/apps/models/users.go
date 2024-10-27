@@ -33,7 +33,7 @@ type User struct {
 	Language            *string      `db:"language" json:"language"`
 	MyConversation      *string      `db:"my_conversation" json:"my_conversation"`
 	ImpactPoints        float32      `db:"impact_points" json:"impact_points"`
-	SocialCauses        *[]string    `db:"social_causes" json:"social_causes"` // social_causes_type[] as typ
+	SocialCauses        *[]uint8     `db:"social_causes" json:"social_causes"` // social_causes_type[] as typ
 	Followers           int          `db:"followers" json:"followers"`
 	Followings          int          `db:"followings" json:"followings"`
 	Avatar              *uuid.UUID   `db:"avatar" json:"avatar"`
@@ -46,7 +46,7 @@ type User struct {
 	Certificates        *[]string    `db:"certificates" json:"certificates"`
 	Educations          *[]string    `db:"educations" json:"educations"`
 	Goals               *string      `db:"goals" json:"goals"`
-	GeonameId           int64        `db:"geoname_id" json:"geoname_id"`
+	GeonameId           *int64       `db:"geoname_id" json:"geoname_id"`
 	IsAdmin             bool         `db:"is_admin" json:"is_admin"`
 	ProofspaceConnectId *string      `db:"proofspace_connect_id" json:"proofspace_connect_id"`
 	OpenToWork          bool         `db:"open_to_work" json:"open_to_work"`
