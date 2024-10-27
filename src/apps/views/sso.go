@@ -1,6 +1,7 @@
 package views
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"socious/src/apps/auth"
@@ -12,7 +13,8 @@ import (
 func ssoGroup(router *gin.Engine) {
 	g := router.Group("sso")
 
-	router.LoadHTMLGlob("src/apps/templates/*")
+	router.LoadHTMLGlob("src/apps/templates/*.html")
+	router.Static("/public", "src/apps/templates/public")
 
 	g.GET("/login", func(c *gin.Context) {
 		redirect_url := c.Query("redirect_url")
@@ -35,6 +37,7 @@ func ssoGroup(router *gin.Engine) {
 		}
 
 		u, err := models.GetUserByEmail(loginForm.Email)
+		fmt.Println(loginForm.Email)
 		if err != nil || u == nil {
 			c.HTML(http.StatusBadRequest, "login.html", gin.H{
 				"redirect_url": redirect_url,
