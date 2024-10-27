@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<link rel="icon" type="image/png" href="/public/favicon.png" />
+		<link rel="icon" type="image/png" href="../public/favicon.png" />
 		<title>Socious Login</title>
 		<style>
 			body,
@@ -129,10 +129,10 @@
 		</style>
 	</head>
 	<body>
-		<form action="/sso/login?redirect_url={{.redirect_url}}" method="post">
+		<form action="./login?redirect_url={{.redirect_url}}" method="post">
 			<div class="container">
 				<div class="card">
-					<img src="/public/logo.svg" alt="Socious Logo" width="40" height="40" class="logo" />
+					<img src="../public/logo.svg" alt="Socious Logo" width="40" height="40" class="logo" />
 					<div class="header">
 						<h2>Sign in with Socious</h2>
 						<span class="light">Sign in to continue to Shin</span>
