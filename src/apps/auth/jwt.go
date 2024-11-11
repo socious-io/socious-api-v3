@@ -2,7 +2,6 @@ package auth
 
 import (
 	"errors"
-	"fmt"
 	"socious/src/config"
 	"time"
 
@@ -47,7 +46,6 @@ func GenerateSSOToken(email, firstName, lastName string) (string, error) {
 		},
 	}
 
-	fmt.Println("config.Config.SSOSecret", config.Config.SSO.Secret)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.Config.SSO.Secret))
 }
