@@ -1,1 +1,1 @@
-SELECT id, username, created_at FROM users WHERE id IN(?)
+SELECT * FROM users WHERE id IN(?)

@@ -2,25 +2,23 @@ package database
 
 import (
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 )
 
 type Model interface {
-	Columns() []string
 	TableName() string
-	Scan(rows *sqlx.Rows) error
+	// Scan(any) error
 	FetchQuery() string
 }
 
-// type Model interface {
-// 	TableName() string
-// 	// Scan(any) error
-// 	FetchQuery() string
-// }
+type Filter struct {
+	Key   string
+	Value string
+}
 
 type Paginate struct {
-	Limit int
-	Offet int
+	Limit   int
+	Offset  int
+	Filters []Filter
 }
 
 type FetchList struct {
