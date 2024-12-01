@@ -53,7 +53,8 @@ func servicesGroup(router *gin.Engine) {
 		s := new(models.Project)
 		utils.Copy(form, s)
 		s.IdentityID = u.(*models.User).ID
-		if err := s.CreateService(ctx.(context.Context)); err != nil {
+		s, err := s.CreateService(ctx.(context.Context), form.WorkSamples)
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

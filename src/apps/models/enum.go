@@ -29,6 +29,11 @@ func (s *Strings) Scan(value interface{}) error {
 	return nil
 }
 
+func (s Strings) Value() (driver.Value, error) {
+	// Convert the slice back to a format suitable for the database
+	return pq.Array([]string(s)).Value()
+}
+
 /*
 Project
 */

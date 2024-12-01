@@ -6,8 +6,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jmoiron/sqlx/types"
 	"github.com/lib/pq"
 )
+
+type WorkSampleDocuments struct {
+	Url      string `db:"url" json:"url"`
+	Filename string `db:"filename" json:"filename"`
+}
 
 type Project struct {
 	ID                    uuid.UUID                `db:"id" json:"id"`
@@ -44,11 +50,14 @@ type Project struct {
 	ServiceTotalHours     *int                     `db:"service_total_hours" json:"service_total_hours"`
 	ServicePrice          *int                     `db:"service_price" json:"service_price"`
 	Kind                  ProjectKind              `db:"kind" json:"kind"`
+	WorkSamples           []WorkSampleDocuments    `db:"-" json:"work_samples"`
 
 	CreatedAt time.Time  `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time  `db:"updated_at" json:"updated_at"`
 	ExpiresAt *time.Time `db:"expires_at" json:"expires_at"`
 	DeletedAt *time.Time `db:"deleted_at" json:"deleted_at"`
+
+	WorkSamplesJson types.JSONText `db:"work_samples" json:"-"`
 }
 
 func (Project) TableName() string {
@@ -59,9 +68,12 @@ func (Project) FetchQuery() string {
 	return "projects/fetch"
 }
 
-func (p *Project) CreateService(ctx context.Context) error {
-	rows, err := database.Query(
+func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Project, error) {
+
+	tx, err := database.GetDB().Beginx()
+	rows, err := database.TxQuery(
 		ctx,
+		tx,
 		"projects/create_service",
 		p.IdentityID,
 		p.Title,
@@ -74,15 +86,35 @@ func (p *Project) CreateService(ctx context.Context) error {
 		p.ServicePrice,
 	)
 	if err != nil {
-		return err
+		tx.Rollback()
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		if err := rows.StructScan(p); err != nil {
-			return err
+			tx.Rollback()
+			return nil, err
 		}
 	}
-	return nil
+	rows.Close()
+
+	for _, workSample := range workSamples {
+		rows, err = database.TxQuery(ctx, tx, "projects/create_work_sample",
+			p.ID, workSample,
+		)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		rows.Close()
+	}
+	tx.Commit()
+
+	s, err := GetService(p.ID)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }
 
 func (p *Project) UpdateService(ctx context.Context) error {

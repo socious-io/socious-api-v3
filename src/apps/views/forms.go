@@ -11,4 +11,5 @@ type ServiceForm struct {
 	JobCategoryId     uuid.UUID `json:"job_category_id" validate:"required"`
 	ServiceTotalHours int       `json:"service_total_hours" validate:"required,min=3"`
 	ServicePrice      int       `json:"service_price" validate:"required,min=3"`
+	WorkSamples       []string  `json:"work_samples" validate:"required"`
 }
