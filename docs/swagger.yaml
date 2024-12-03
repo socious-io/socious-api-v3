@@ -254,11 +254,11 @@ paths:
             application/json:
               schema:
                 properties:
-                  services:
+                  results:
                     type: array
                     items:
                       $ref: '#/components/schemas/Projects'
-                  total_count:
+                  total:
                     type: number
                 type: object
     post:
