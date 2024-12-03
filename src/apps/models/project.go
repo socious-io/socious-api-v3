@@ -2,8 +2,9 @@ package models
 
 import (
 	"context"
-	"socious/src/database"
 	"time"
+
+	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx/types"
@@ -49,6 +50,7 @@ type Project struct {
 	Promoted              *bool                    `db:"promoted" json:"promoted"`
 	ServiceTotalHours     *int                     `db:"service_total_hours" json:"service_total_hours"`
 	ServicePrice          *int                     `db:"service_price" json:"service_price"`
+	ServiceLength         *ServiceLength           `db:"service_length" json:"service_length"`
 	Kind                  ProjectKind              `db:"kind" json:"kind"`
 	WorkSamples           []WorkSampleDocuments    `db:"-" json:"work_samples"`
 
@@ -79,9 +81,9 @@ func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Pro
 		p.Title,
 		p.Description,
 		p.PaymentCurrency,
-		p.ProjectLength,
 		pq.Array(p.Skills),
 		p.JobCategoryId,
+		p.ServiceLength,
 		p.ServiceTotalHours,
 		p.ServicePrice,
 	)
@@ -117,7 +119,7 @@ func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Pro
 	return s, nil
 }
 
-func (p *Project) UpdateService(ctx context.Context) error {
+func (p *Project) UpdateService(ctx context.Context) (*Project, error) {
 	rows, err := database.Query(
 		ctx,
 		"projects/update_service",
@@ -125,22 +127,26 @@ func (p *Project) UpdateService(ctx context.Context) error {
 		p.Title,
 		p.Description,
 		p.PaymentCurrency,
-		p.ProjectLength,
 		pq.Array(p.Skills),
 		p.JobCategoryId,
+		p.ServiceLength,
 		p.ServiceTotalHours,
 		p.ServicePrice,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		if err := rows.StructScan(p); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	s, err := GetService(p.ID)
+	if err != nil {
+		return nil, err
+	}
+	return s, nil
 }
 
 func (p *Project) Delete(ctx context.Context) error {
@@ -159,7 +165,7 @@ func GetServices(userId uuid.UUID, p database.Paginate) ([]Project, int, error) 
 		ids       []interface{}
 	)
 
-	if err := database.QuerySelect("projects/get_services", &fetchList, userId, p.Limit, p.Offset); err != nil {
+	if err := database.QuerySelect("projects/get_services", &fetchList, userId, p.Limit, p.Offet); err != nil {
 		return nil, 0, err
 	}
 

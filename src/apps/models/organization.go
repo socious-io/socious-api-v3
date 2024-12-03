@@ -1,8 +1,9 @@
 package models
 
 import (
-	"socious/src/database"
 	"time"
+
+	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
 )

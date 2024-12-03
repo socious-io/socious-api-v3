@@ -6,7 +6,8 @@ import (
 	"socious/src/apps/auth"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
-	"socious/src/database"
+
+	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -73,11 +74,12 @@ func servicesGroup(router *gin.Engine) {
 		s := new(models.Project)
 		utils.Copy(form, s)
 		s.ID = uuid.MustParse(id)
-		if err := s.UpdateService(ctx.(context.Context)); err != nil {
+		s, err := s.UpdateService(ctx.(context.Context))
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusCreated, s)
+		c.JSON(http.StatusOK, s)
 	})
 
 	g.DELETE("/:id", func(c *gin.Context) {

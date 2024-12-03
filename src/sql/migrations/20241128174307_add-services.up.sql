@@ -1,7 +1,18 @@
 CREATE TYPE project_kind AS ENUM ('JOB', 'SERVICE');
+CREATE TYPE service_length AS ENUM (
+    'LESS_THAN_A_DAY',
+    '1_3_DAYS',
+    '1_WEEK',
+    '2_WEEKS',
+    '1_MONTH',
+    '1_3_MONTHS',
+    '3_6_MONTHS',
+    '6_MONTHS_OR_MORE'
+);
 
 ALTER TABLE projects
     ADD COLUMN kind project_kind DEFAULT 'JOB' NOT NULL,
+    ADD COLUMN service_length service_length DEFAULT NULL,
     ADD COLUMN service_total_hours integer,
     ADD COLUMN service_price integer;
 

@@ -203,11 +203,11 @@ func (pt PaymentType) Value() (driver.Value, error) {
 type ProjectLength string
 
 const (
-	ProjectLengthLess1Day   PaymentType = "LESS_THAN_A_DAY"
-	ProjectLengthLess1Month PaymentType = "LESS_THAN_A_MONTH"
-	ProjectLength1To3Month  PaymentType = "1_3_MONTHS"
-	ProjectLength3To6Month  PaymentType = "3_6_MONTHS"
-	ProjectLengthMore6Month PaymentType = "6_MONTHS_OR_MORE"
+	ProjectLengthLess1Day   ProjectLength = "LESS_THAN_A_DAY"
+	ProjectLengthLess1Month ProjectLength = "LESS_THAN_A_MONTH"
+	ProjectLength1To3Month  ProjectLength = "1_3_MONTHS"
+	ProjectLength3To6Month  ProjectLength = "3_6_MONTHS"
+	ProjectLengthMore6Month ProjectLength = "6_MONTHS_OR_MORE"
 )
 
 func (pl *ProjectLength) Scan(value interface{}) error {
@@ -226,12 +226,41 @@ func (pl ProjectLength) Value() (driver.Value, error) {
 	return string(pl), nil
 }
 
+type ServiceLength string
+
+const (
+	ServiceLengthLess1Day   ServiceLength = "LESS_THAN_A_DAY"
+	ServiceLength1To3Day    ServiceLength = "1_3_DAYS"
+	ServiceLength1Week      ServiceLength = "1_WEEK"
+	ServiceLength2Weeks     ServiceLength = "2_WEEKS"
+	ServiceLength1Month     ServiceLength = "1_MONTH"
+	ServiceLength1To3Month  ServiceLength = "1_3_MONTHS"
+	ServiceLength3To6Month  ServiceLength = "3_6_MONTHS"
+	ServiceLengthMore6Month ServiceLength = "6_MONTHS_OR_MORE"
+)
+
+func (sl *ServiceLength) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*sl = ServiceLength(string(v))
+	case string:
+		*sl = ServiceLength(v)
+	default:
+		return fmt.Errorf("failed to scan credential type: %v", value)
+	}
+	return nil
+}
+
+func (sl ServiceLength) Value() (driver.Value, error) {
+	return string(sl), nil
+}
+
 type ProjectRemotePreference string
 
 const (
-	ProjectRemotePreferenceOnsite PaymentType = "ONSITE"
-	ProjectRemotePreferenceRemote PaymentType = "REMOTE"
-	ProjectRemotePreferenceHybrid PaymentType = "HYBRID"
+	ProjectRemotePreferenceOnsite ProjectRemotePreference = "ONSITE"
+	ProjectRemotePreferenceRemote ProjectRemotePreference = "REMOTE"
+	ProjectRemotePreferenceHybrid ProjectRemotePreference = "HYBRID"
 )
 
 func (prp *ProjectRemotePreference) Scan(value interface{}) error {

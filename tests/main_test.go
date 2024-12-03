@@ -9,10 +9,11 @@ import (
 	"os"
 	"socious/src/apps"
 	"socious/src/config"
-	"socious/src/database"
 	"strings"
 	"testing"
 	"time"
+
+	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -48,7 +49,7 @@ func TestSuite(t *testing.T) {
 }
 
 var _ = Describe("Socious Test Suite", func() {
-
+	Context("Services", serviceGroup)
 })
 
 func init() {

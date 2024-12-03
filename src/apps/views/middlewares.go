@@ -1,9 +1,10 @@
 package views
 
 import (
-	"socious/src/database"
 	"strconv"
 	"strings"
+
+	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,7 +39,7 @@ func paginate() gin.HandlerFunc {
 
 		c.Set("paginate", database.Paginate{
 			Limit:   limit,
-			Offset:  (page - 1) * limit,
+			Offet:   (page - 1) * limit,
 			Filters: filters,
 		})
 		c.Set("limit", limit)
