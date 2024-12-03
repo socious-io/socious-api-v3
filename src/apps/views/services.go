@@ -74,7 +74,7 @@ func servicesGroup(router *gin.Engine) {
 		s := new(models.Project)
 		utils.Copy(form, s)
 		s.ID = uuid.MustParse(id)
-		s, err := s.UpdateService(ctx.(context.Context))
+		s, err := s.UpdateService(ctx.(context.Context), form.WorkSamples)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

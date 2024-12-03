@@ -119,9 +119,12 @@ func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Pro
 	return s, nil
 }
 
-func (p *Project) UpdateService(ctx context.Context) (*Project, error) {
-	rows, err := database.Query(
+func (p *Project) UpdateService(ctx context.Context, workSamples []string) (*Project, error) {
+
+	tx, err := database.GetDB().Beginx()
+	rows, err := database.TxQuery(
 		ctx,
+		tx,
 		"projects/update_service",
 		p.ID,
 		p.Title,
@@ -134,14 +137,40 @@ func (p *Project) UpdateService(ctx context.Context) (*Project, error) {
 		p.ServicePrice,
 	)
 	if err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		if err := rows.StructScan(p); err != nil {
+			tx.Rollback()
 			return nil, err
 		}
 	}
+	rows.Close()
+
+	//delete and recreate files
+	rows, err = database.TxQuery(ctx, tx, "projects/delete_work_samples",
+		p.ID,
+	)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	rows.Close()
+
+	for _, workSample := range workSamples {
+		rows, err = database.TxQuery(ctx, tx, "projects/create_work_sample",
+			p.ID, workSample,
+		)
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+		rows.Close()
+	}
+	tx.Commit()
+
 	s, err := GetService(p.ID)
 	if err != nil {
 		return nil, err
