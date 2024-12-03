@@ -59,7 +59,8 @@ type Project struct {
 	ExpiresAt *time.Time `db:"expires_at" json:"expires_at"`
 	DeletedAt *time.Time `db:"deleted_at" json:"deleted_at"`
 
-	WorkSamplesJson types.JSONText `db:"work_samples" json:"-"`
+	WorkSamplesJson types.JSONText  `db:"work_samples" json:"-"`
+	JobCategoryJson *types.JSONText `db:"job_category" json:"job_category"`
 }
 
 func (Project) TableName() string {

@@ -1,4 +1,5 @@
 SELECT p.*,
+row_to_json(jc.*) AS job_category,
 (
 	COALESCE(
 		(SELECT
@@ -16,4 +17,5 @@ SELECT p.*,
 	)
 ) AS work_samples
 FROM projects p
+LEFT JOIN job_categories jc ON jc.id=p.job_category_id
 WHERE p.id IN (?)
