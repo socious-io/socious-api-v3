@@ -16,6 +16,11 @@ type WorkSampleDocuments struct {
 	Filename string `db:"filename" json:"filename"`
 }
 
+type WorkSampleType struct {
+	ServiceID uuid.UUID `db:"service_id" json:"service_id"`
+	Document  string    `db:"document" json:"document"`
+}
+
 type Project struct {
 	ID                    uuid.UUID                `db:"id" json:"id"`
 	IdentityID            uuid.UUID                `db:"identity_id" json:"identity_id"`
@@ -31,8 +36,8 @@ type Project struct {
 	PaymentType           *PaymentType             `db:"payment_type" json:"payment_type"`
 	PaymentScheme         PaymentScheme            `db:"payment_scheme" json:"payment_scheme"`
 	Country               *string                  `db:"country" json:"country"`
-	Skills                Strings                  `db:"skills" json:"skills"`
-	CausesTags            Strings                  `db:"causes_tags" json:"causes_tags"`
+	Skills                pq.StringArray           `db:"skills" json:"skills"`
+	CausesTags            pq.StringArray           `db:"causes_tags" json:"causes_tags"`
 	OldId                 *int                     `db:"old_id" json:"old_id"`
 	OtherPartyId          *string                  `db:"other_party_id" json:"other_party_id"`
 	OtherPartyTitle       *string                  `db:"other_party_title" json:"other_party_title"`
@@ -101,16 +106,17 @@ func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Pro
 	}
 	rows.Close()
 
+	workSamplesData := []WorkSampleType{}
 	for _, workSample := range workSamples {
-		rows, err = database.TxQuery(ctx, tx, "projects/create_work_sample",
-			p.ID, workSample,
-		)
-		if err != nil {
+		workSamplesData = append(workSamplesData, WorkSampleType{ServiceID: p.ID, Document: workSample})
+	}
+	if len(workSamplesData) > 0 {
+		if _, err = database.TxExecuteQuery(tx, "projects/create_work_samples", workSamplesData); err != nil {
 			tx.Rollback()
 			return nil, err
 		}
-		rows.Close()
 	}
+	rows.Close()
 	tx.Commit()
 
 	s, err := GetService(p.ID)
@@ -160,16 +166,17 @@ func (p *Project) UpdateService(ctx context.Context, workSamples []string) (*Pro
 	}
 	rows.Close()
 
+	workSamplesData := []WorkSampleType{}
 	for _, workSample := range workSamples {
-		rows, err = database.TxQuery(ctx, tx, "projects/create_work_sample",
-			p.ID, workSample,
-		)
-		if err != nil {
+		workSamplesData = append(workSamplesData, WorkSampleType{ServiceID: p.ID, Document: workSample})
+	}
+	if len(workSamplesData) > 0 {
+		if _, err = database.TxExecuteQuery(tx, "projects/create_work_samples", workSamplesData); err != nil {
 			tx.Rollback()
 			return nil, err
 		}
-		rows.Close()
 	}
+	rows.Close()
 	tx.Commit()
 
 	s, err := GetService(p.ID)

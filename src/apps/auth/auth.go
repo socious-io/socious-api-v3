@@ -1,12 +1,6 @@
 package auth
 
 import (
-	"math"
-	"math/rand/v2"
-	"regexp"
-	"strconv"
-	"strings"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -47,25 +41,4 @@ func GenerateFullTokens(id string) (map[string]any, error) {
 		"refresh_token": refreshToken,
 		"token_type":    "Bearer",
 	}, nil
-}
-
-func GenerateUsername(email string) string {
-	var username string = email
-	var re *regexp.Regexp
-
-	re = regexp.MustCompile("@.*$")
-	username = re.ReplaceAllString(username, "")
-
-	re = regexp.MustCompile("[^a-z0-9._-]")
-	username = re.ReplaceAllString(username, "-")
-
-	re = regexp.MustCompile("[._-]{2,}")
-	username = re.ReplaceAllString(username, "-")
-
-	username = strings.ToLower(username)
-	username = username[0:int(math.Min(float64(len(username)), 20))]
-
-	username = username + strconv.Itoa(int(1000+rand.Float64()*9000))
-
-	return username
 }

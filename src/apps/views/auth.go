@@ -26,10 +26,6 @@ func authGroup(router *gin.Engine) {
 			u.Password = &password
 		}
 
-		if form.Username == nil {
-			u.Username = auth.GenerateUsername(u.Email)
-		}
-
 		ctx, _ := c.Get("ctx")
 		if err := u.Create(ctx.(context.Context)); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

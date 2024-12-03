@@ -3,36 +3,7 @@ package models
 import (
 	"database/sql/driver"
 	"fmt"
-
-	"github.com/lib/pq"
 )
-
-/*
-General
-*/
-
-type Strings []string
-
-func (s *Strings) Scan(value interface{}) error {
-	// Ensure the value is a byte slice
-	_, ok := value.([]uint8)
-	if !ok {
-		return fmt.Errorf("failed to scan: expected []uint8, got %T", value)
-	}
-
-	switch v := value.(type) {
-	case []uint8:
-		pq.Array(s).Scan(v)
-	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
-	}
-	return nil
-}
-
-func (s Strings) Value() (driver.Value, error) {
-	// Convert the slice back to a format suitable for the database
-	return pq.Array([]string(s)).Value()
-}
 
 /*
 Project
