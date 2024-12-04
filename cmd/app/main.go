@@ -3,8 +3,9 @@ package main
 import (
 	"socious/src/apps"
 	"socious/src/config"
-	"socious/src/database"
 	"time"
+
+	database "github.com/socious-io/pkg_database"
 )
 
 func main() {

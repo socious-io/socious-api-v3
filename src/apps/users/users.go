@@ -1,8 +1,9 @@
 package users
 
 import (
-	"socious/src/database"
 	"time"
+
+	database "github.com/socious-io/pkg_database"
 
 	"github.com/jmoiron/sqlx"
 )
