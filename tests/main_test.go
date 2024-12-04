@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/url"
 	"os"
 	"socious/src/apps"
 	"socious/src/config"
@@ -88,6 +89,7 @@ func bodyExpect(body, expect gin.H) {
 
 func setupTestEnvironment() (*sqlx.DB, *gin.Engine) {
 	config.Init(configPath)
+	parsedURL, _ := url.Parse(config.Config.Database.URL)
 	db := database.Connect(&database.ConnectOption{
 		URL:         config.Config.Database.URL,
 		SqlDir:      config.Config.Database.SqlDir,
@@ -95,6 +97,19 @@ func setupTestEnvironment() (*sqlx.DB, *gin.Engine) {
 		Interval:    30 * time.Second,
 		Timeout:     5 * time.Second,
 	})
+
+	schemaFile := fmt.Sprintf("%s/schema.sql", config.Config.Database.SqlDir) // Adjust the path if needed
+	schemaContent, err := os.ReadFile(schemaFile)
+	if err != nil {
+		log.Fatalf("Failed to read schema.sql: %v", err)
+	}
+	query := strings.ReplaceAll(string(schemaContent), "$1", parsedURL.User.Username())
+	_, err = db.Exec(query)
+	if err != nil {
+		log.Fatalf("Failed to execute schema.sql: %v", err)
+	}
+	log.Println("Schema applied successfully!")
+
 	m, err := migrate.New(
 		fmt.Sprintf("file://%s", config.Config.Database.Migrations),
 		config.Config.Database.URL,
