@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"socious/src/apps/auth"
 
 	"github.com/gin-gonic/gin"
 	. "github.com/onsi/ginkgo/v2"
@@ -27,6 +28,8 @@ func authGroup() {
 		Expect(w.Code).To(Equal(200))
 		authTokens = append(authTokens, body["access_token"].(string))
 		authRefreshTokens = append(authRefreshTokens, body["refresh_token"].(string))
+		claims, _ := auth.VerifyToken(body["access_token"].(string))
+		usersData[0]["id"] = claims.ID
 	})
 
 }

@@ -11,11 +11,11 @@ import (
 )
 
 type Media struct {
-	ID        uuid.UUID `db:"id" json:"id"`
-	UserID    uuid.UUID `db:"user_id" json:"-"`
-	URL       string    `db:"url" json:"url"`
-	Filename  string    `db:"filename" json:"filename"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	ID         uuid.UUID `db:"id" json:"id"`
+	IdentityID uuid.UUID `db:"identity_id" json:"-"`
+	URL        string    `db:"url" json:"url"`
+	Filename   string    `db:"filename" json:"filename"`
+	CreatedAt  time.Time `db:"created_at" json:"created_at"`
 }
 
 func (Media) TableName() string {
@@ -34,7 +34,7 @@ func (m *Media) Create(ctx context.Context) error {
 	rows, err := database.Query(
 		ctx,
 		"media/create",
-		m.UserID, m.URL, m.Filename,
+		m.IdentityID, m.URL, m.Filename,
 	)
 	if err != nil {
 		return err
@@ -46,6 +46,14 @@ func (m *Media) Create(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func GetMedia(id uuid.UUID) (*Media, error) {
+	m := new(Media)
+	if err := database.Fetch(m, id); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 func getAllMedia() ([]Media, error) {

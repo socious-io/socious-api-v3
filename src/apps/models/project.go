@@ -67,6 +67,14 @@ type Project struct {
 	WorkSamplesJson types.JSONText  `db:"work_samples" json:"-"`
 	JobCategoryJson *types.JSONText `db:"job_category" json:"job_category"`
 }
+type JobCategory struct {
+	ID                uuid.UUID `db:"id" json:"id"`
+	Name              string    `db:"name" json:"name"`
+	HourlyWageDollars *float64  `db:"hourly_wage_dollars" json:"hourly_wage_dollars"`
+
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
 
 func (Project) TableName() string {
 	return "projects"
@@ -226,4 +234,24 @@ func GetService(id uuid.UUID) (*Project, error) {
 		return nil, err
 	}
 	return p, nil
+}
+
+func (jc *JobCategory) Create(ctx context.Context) error {
+	rows, err := database.Query(
+		ctx,
+		"projects/create_job_category",
+		jc.Name,
+		jc.HourlyWageDollars,
+	)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.StructScan(jc); err != nil {
+			return err
+		}
+	}
+	rows.Close()
+	return nil
 }

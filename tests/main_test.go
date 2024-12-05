@@ -49,7 +49,7 @@ func TestSuite(t *testing.T) {
 	RunSpecs(t, "API Suite")
 }
 
-var _ = Describe("Socious Test Suite", func() {
+var _ = Describe("Socious Test Suite", Ordered, func() {
 	Context("Auth", authGroup)
 	Context("Services", serviceGroup)
 })
