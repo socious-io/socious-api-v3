@@ -10,7 +10,7 @@ type ProjectForm struct {
 	Title                 string                          `json:"title" validate:"required"`
 	Description           string                          `json:"description" validate:"required"`
 	ProjectType           *models.ProjectType             `json:"project_type"`
-	ProjectLength         models.ProjectLength            `json:"project_length"`
+	ProjectLength         *models.ProjectLength           `json:"project_length"`
 	PaymentCurrency       *string                         `json:"payment_currency"`
 	PaymentRangeLower     *string                         `json:"payment_range_lower"`
 	PaymentRangeHigher    *string                         `json:"payment_range_higher"`
