@@ -179,6 +179,10 @@ const (
 	ProjectLength1To3Month  ProjectLength = "1_3_MONTHS"
 	ProjectLength3To6Month  ProjectLength = "3_6_MONTHS"
 	ProjectLengthMore6Month ProjectLength = "6_MONTHS_OR_MORE"
+	ProjectLength1To3Day    ProjectLength = "1_3_DAYS"
+	ProjectLength1Week      ProjectLength = "1_WEEK"
+	ProjectLength2Weeks     ProjectLength = "2_WEEKS"
+	ProjectLength1Month     ProjectLength = "1_MONTH"
 )
 
 func (pl *ProjectLength) Scan(value interface{}) error {
@@ -195,35 +199,6 @@ func (pl *ProjectLength) Scan(value interface{}) error {
 
 func (pl ProjectLength) Value() (driver.Value, error) {
 	return string(pl), nil
-}
-
-type ServiceLength string
-
-const (
-	ServiceLengthLess1Day   ServiceLength = "LESS_THAN_A_DAY"
-	ServiceLength1To3Day    ServiceLength = "1_3_DAYS"
-	ServiceLength1Week      ServiceLength = "1_WEEK"
-	ServiceLength2Weeks     ServiceLength = "2_WEEKS"
-	ServiceLength1Month     ServiceLength = "1_MONTH"
-	ServiceLength1To3Month  ServiceLength = "1_3_MONTHS"
-	ServiceLength3To6Month  ServiceLength = "3_6_MONTHS"
-	ServiceLengthMore6Month ServiceLength = "6_MONTHS_OR_MORE"
-)
-
-func (sl *ServiceLength) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case []byte:
-		*sl = ServiceLength(string(v))
-	case string:
-		*sl = ServiceLength(v)
-	default:
-		return fmt.Errorf("failed to scan type: %v", value)
-	}
-	return nil
-}
-
-func (sl ServiceLength) Value() (driver.Value, error) {
-	return string(sl), nil
 }
 
 type ProjectRemotePreference string

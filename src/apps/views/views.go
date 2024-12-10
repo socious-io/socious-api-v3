@@ -5,6 +5,6 @@ import "github.com/gin-gonic/gin"
 func Init(r *gin.Engine) {
 	ssoGroup(r)
 	authGroup(r)
-	servicesGroup(r)
+	projectsGroup(r)
 	contractsGroup(r)
 }

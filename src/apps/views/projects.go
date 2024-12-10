@@ -7,21 +7,27 @@ import (
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
 
-	database "github.com/socious-io/pkg_database"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	database "github.com/socious-io/pkg_database"
 )
 
-func servicesGroup(router *gin.Engine) {
-	g := router.Group("services")
+func projectsGroup(router *gin.Engine) {
+	g := router.Group("projects")
 	g.Use(auth.LoginRequired())
 
-	g.GET("", paginate(), func(c *gin.Context) {
+	g.GET("/services", paginate(), func(c *gin.Context) {
 		u, _ := c.Get("user")
 		page, _ := c.Get("paginate")
+		pagination := page.(database.Paginate)
+		pagination.Filters = []database.Filter{
+			{
+				Key:   "kind",
+				Value: "SERVICE",
+			},
+		}
 
-		services, total, err := models.GetServices(u.(*models.User).ID, page.(database.Paginate))
+		services, total, err := models.GetProjects(u.(*models.User).ID, pagination)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -31,17 +37,19 @@ func servicesGroup(router *gin.Engine) {
 			"total":   total,
 		})
 	})
-	g.GET("/:id", func(c *gin.Context) {
+
+	g.GET("/services/:id", func(c *gin.Context) {
 		id := c.Param("id")
 
-		s, err := models.GetService(uuid.MustParse(id))
+		s, err := models.GetProject(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, s)
 	})
-	g.POST("", func(c *gin.Context) {
+
+	g.POST("/services", func(c *gin.Context) {
 		ctx, _ := c.Get("ctx")
 		u, _ := c.Get("user")
 
@@ -54,15 +62,17 @@ func servicesGroup(router *gin.Engine) {
 		s := new(models.Project)
 		utils.Copy(form, s)
 		s.IdentityID = u.(*models.User).ID
-		s, err := s.CreateService(ctx.(context.Context), form.WorkSamples)
-		if err != nil {
+		s.Kind = models.ProjectKindService
+		s.CommitmentHoursLower, s.CommitmentHoursHigher = &form.TotalHours, &form.TotalHours
+		s.PaymentRangeLower, s.PaymentRangeHigher = &form.Price, &form.Price
+		if err := s.Create(ctx.(context.Context), form.WorkSamples); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusCreated, s)
 	})
 
-	g.PATCH("/:id", func(c *gin.Context) {
+	g.PATCH("/services/:id", func(c *gin.Context) {
 		ctx, _ := c.Get("ctx")
 		id := c.Param("id")
 
@@ -74,19 +84,20 @@ func servicesGroup(router *gin.Engine) {
 		s := new(models.Project)
 		utils.Copy(form, s)
 		s.ID = uuid.MustParse(id)
-		s, err := s.UpdateService(ctx.(context.Context), form.WorkSamples)
-		if err != nil {
+		s.CommitmentHoursLower, s.CommitmentHoursHigher = &form.TotalHours, &form.TotalHours
+		s.PaymentRangeLower, s.PaymentRangeHigher = &form.Price, &form.Price
+		if err := s.Update(ctx.(context.Context), form.WorkSamples); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, s)
 	})
 
-	g.DELETE("/:id", func(c *gin.Context) {
+	g.DELETE("/services/:id", func(c *gin.Context) {
 		ctx, _ := c.Get("ctx")
 		id := c.Param("id")
 
-		s, err := models.GetService(uuid.MustParse(id))
+		s, err := models.GetProject(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
