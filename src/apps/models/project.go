@@ -84,7 +84,7 @@ func (Project) FetchQuery() string {
 func (p *Project) Create(ctx context.Context, workSamples []uuid.UUID) error {
 	tx, err := database.GetDB().Beginx()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	rows, err := database.TxQuery(
@@ -155,7 +155,7 @@ func (p *Project) Update(ctx context.Context, workSamples []uuid.UUID) error {
 
 	tx, err := database.GetDB().Beginx()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	rows, err := database.TxQuery(
 		ctx,

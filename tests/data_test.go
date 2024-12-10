@@ -33,15 +33,18 @@ var (
 
 	servicesData = []gin.H{
 		{
-			"title":            "sample service",
-			"description":      "service desc",
-			"payment_currency": "USD",
-			"skills":           []string{"Skill1"},
-			"project_length":   "LESS_THAN_A_DAY",
-			"job_category_id":  "",
-			"total_hours":      "1",
-			"price":            "2",
-			"work_samples":     []string{},
+			"title":                   "sample service",
+			"description":             "service desc",
+			"payment_currency":        "USD",
+			"skills":                  []string{"Skill1"},
+			"project_length":          "LESS_THAN_A_DAY",
+			"job_category_id":         "",
+			"commitment_hours_lower":  "1",
+			"commitment_hours_higher": "1",
+			"payment_range_lower":     "2",
+			"payment_range_higher":    "2",
+			"kind":                    "SERVICE",
+			"work_samples":            []string{},
 		},
 	}
 

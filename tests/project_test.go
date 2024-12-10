@@ -15,7 +15,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func serviceGroup() {
+func projectGroup() {
 
 	BeforeAll(func() {
 		ctx := context.Background()
@@ -43,7 +43,7 @@ func serviceGroup() {
 		for i, data := range servicesData {
 			w := httptest.NewRecorder()
 			reqBody, _ := json.Marshal(data)
-			req, _ := http.NewRequest("POST", "/projects/services", bytes.NewBuffer(reqBody))
+			req, _ := http.NewRequest("POST", "/projects", bytes.NewBuffer(reqBody))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Authorization", authTokens[0])
 			router.ServeHTTP(w, req)
@@ -55,7 +55,7 @@ func serviceGroup() {
 
 	It("should get all services with pagination", func() {
 		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/projects/services", nil)
+		req, _ := http.NewRequest("GET", "/projects", nil)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", authTokens[0])
 		router.ServeHTTP(w, req)
@@ -68,7 +68,7 @@ func serviceGroup() {
 		for _, data := range servicesData {
 			w := httptest.NewRecorder()
 			reqBody, _ := json.Marshal(data)
-			req, _ := http.NewRequest("GET", fmt.Sprintf("/projects/services/%s", data["id"]), bytes.NewBuffer(reqBody))
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/projects/%s", data["id"]), bytes.NewBuffer(reqBody))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Authorization", authTokens[0])
 			router.ServeHTTP(w, req)
@@ -82,7 +82,7 @@ func serviceGroup() {
 		for _, data := range servicesData {
 			w := httptest.NewRecorder()
 			reqBody, _ := json.Marshal(data)
-			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/projects/services/%s", data["id"]), bytes.NewBuffer(reqBody))
+			req, _ := http.NewRequest("DELETE", fmt.Sprintf("/projects/%s", data["id"]), bytes.NewBuffer(reqBody))
 			req.Header.Set("Content-Type", "application/json")
 			req.Header.Set("Authorization", authTokens[0])
 			router.ServeHTTP(w, req)
