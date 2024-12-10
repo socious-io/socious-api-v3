@@ -17,19 +17,21 @@ func authGroup() {
 	authExecuted = true
 
 	It("should register user", func() {
-		w := httptest.NewRecorder()
-		reqBody, _ := json.Marshal(usersData[0])
-		req, _ := http.NewRequest("POST", "/auth/register", bytes.NewBuffer(reqBody))
-		req.Header.Set("Content-Type", "application/json")
-		router.ServeHTTP(w, req)
+		for i, data := range usersData {
+			w := httptest.NewRecorder()
+			reqBody, _ := json.Marshal(data)
+			req, _ := http.NewRequest("POST", "/auth/register", bytes.NewBuffer(reqBody))
+			req.Header.Set("Content-Type", "application/json")
+			router.ServeHTTP(w, req)
 
-		body := decodeBody(w.Body)
-		bodyExpect(body, gin.H{"access_token": "<ANY>", "refresh_token": "<ANY>", "token_type": "Bearer"})
-		Expect(w.Code).To(Equal(200))
-		authTokens = append(authTokens, body["access_token"].(string))
-		authRefreshTokens = append(authRefreshTokens, body["refresh_token"].(string))
-		claims, _ := auth.VerifyToken(body["access_token"].(string))
-		usersData[0]["id"] = claims.ID
+			body := decodeBody(w.Body)
+			bodyExpect(body, gin.H{"access_token": "<ANY>", "refresh_token": "<ANY>", "token_type": "Bearer"})
+			Expect(w.Code).To(Equal(200))
+			authTokens = append(authTokens, body["access_token"].(string))
+			authRefreshTokens = append(authRefreshTokens, body["refresh_token"].(string))
+			claims, _ := auth.VerifyToken(body["access_token"].(string))
+			usersData[i]["id"] = claims.ID
+		}
 	})
 
 }

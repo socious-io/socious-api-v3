@@ -23,7 +23,7 @@ func (ps *ProjectStatus) Scan(value interface{}) error {
 	case string:
 		*ps = ProjectStatus(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -47,7 +47,7 @@ func (pt *ProjectType) Scan(value interface{}) error {
 	case string:
 		*pt = ProjectType(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -70,7 +70,7 @@ func (pmt *PaymentModeType) Scan(value interface{}) error {
 	case string:
 		*pmt = PaymentModeType(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -93,7 +93,7 @@ func (ps *PaymentScheme) Scan(value interface{}) error {
 	case string:
 		*ps = PaymentScheme(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -116,7 +116,7 @@ func (ps *PaymentService) Scan(value interface{}) error {
 	case string:
 		*ps = PaymentService(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -139,7 +139,7 @@ func (pst *PaymentSourceType) Scan(value interface{}) error {
 	case string:
 		*pst = PaymentSourceType(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -162,7 +162,7 @@ func (pt *PaymentType) Scan(value interface{}) error {
 	case string:
 		*pt = PaymentType(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -188,7 +188,7 @@ func (pl *ProjectLength) Scan(value interface{}) error {
 	case string:
 		*pl = ProjectLength(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -217,7 +217,7 @@ func (sl *ServiceLength) Scan(value interface{}) error {
 	case string:
 		*sl = ServiceLength(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -241,7 +241,7 @@ func (prp *ProjectRemotePreference) Scan(value interface{}) error {
 	case string:
 		*prp = ProjectRemotePreference(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
@@ -264,11 +264,92 @@ func (pk *ProjectKind) Scan(value interface{}) error {
 	case string:
 		*pk = ProjectKind(v)
 	default:
-		return fmt.Errorf("failed to scan credential type: %v", value)
+		return fmt.Errorf("failed to scan type: %v", value)
 	}
 	return nil
 }
 
 func (pk ProjectKind) Value() (driver.Value, error) {
 	return string(pk), nil
+}
+
+type ContractStatus string
+
+const (
+	ContractStatusCreated          ContractStatus = "CREATED"
+	ContractStatusClientApproved   ContractStatus = "CLIENT_APPROVED"
+	ContractStatusSinged           ContractStatus = "SIGNED"
+	ContractStatusProviderCanceled ContractStatus = "PROVIDER_CANCELED"
+	ContractStatusClientCanceled   ContractStatus = "CLIENT_CANCELED"
+)
+
+func (pk *ContractStatus) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*pk = ContractStatus(string(v))
+	case string:
+		*pk = ContractStatus(v)
+	default:
+		return fmt.Errorf("failed to scan type: %v", value)
+	}
+	return nil
+}
+
+type ContractType string
+
+const (
+	ContractTypeVolunteer ContractType = "VOLUNTEER"
+	ContractTypePaid      ContractType = "PAID"
+)
+
+func (pk *ContractType) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*pk = ContractType(string(v))
+	case string:
+		*pk = ContractType(v)
+	default:
+		return fmt.Errorf("failed to scan type: %v", value)
+	}
+	return nil
+}
+
+type ContractCommitmentPeriod string
+
+const (
+	ContractCommitmentHourly  ContractCommitmentPeriod = "HOURLY"
+	ContractCommitmentDaily   ContractCommitmentPeriod = "DAILY"
+	ContractCommitmentWeekly  ContractCommitmentPeriod = "WEEKLY"
+	ContractCommitmentMonthly ContractCommitmentPeriod = "MONTHLY"
+)
+
+func (pk *ContractCommitmentPeriod) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*pk = ContractCommitmentPeriod(string(v))
+	case string:
+		*pk = ContractCommitmentPeriod(v)
+	default:
+		return fmt.Errorf("failed to scan type: %v", value)
+	}
+	return nil
+}
+
+type Currency string
+
+const (
+	USD Currency = "USD"
+	JPY Currency = "JPY"
+)
+
+func (pk *Currency) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*pk = Currency(string(v))
+	case string:
+		*pk = Currency(v)
+	default:
+		return fmt.Errorf("failed to scan type: %v", value)
+	}
+	return nil
 }

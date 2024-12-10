@@ -87,6 +87,10 @@ func (Project) FetchQuery() string {
 func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Project, error) {
 
 	tx, err := database.GetDB().Beginx()
+	if err != nil {
+		return nil, err
+	}
+
 	rows, err := database.TxQuery(
 		ctx,
 		tx,
@@ -137,6 +141,9 @@ func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Pro
 func (p *Project) UpdateService(ctx context.Context, workSamples []string) (*Project, error) {
 
 	tx, err := database.GetDB().Beginx()
+	if err != nil {
+		return nil, err
+	}
 	rows, err := database.TxQuery(
 		ctx,
 		tx,
