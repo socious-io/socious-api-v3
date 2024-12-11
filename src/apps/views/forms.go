@@ -6,16 +6,31 @@ import (
 	"github.com/google/uuid"
 )
 
-type ServiceForm struct {
-	Title             string    `json:"title" validate:"required,min=3"`
-	Description       string    `json:"description" validate:"required,min=3"`
-	PaymentCurrency   string    `json:"payment_currency" validate:"required"`
-	Skills            []string  `json:"skills" validate:"required"`
-	JobCategoryId     uuid.UUID `json:"job_category_id" validate:"required"`
-	ServiceTotalHours int       `json:"service_total_hours" validate:"required,min=3"`
-	ServicePrice      int       `json:"service_price" validate:"required,min=3"`
-	ServiceLength     string    `json:"service_length" validate:"required"`
-	WorkSamples       []string  `json:"work_samples" validate:"required"`
+type ProjectForm struct {
+	Title                 string                          `json:"title" validate:"required"`
+	Description           string                          `json:"description" validate:"required"`
+	ProjectType           *models.ProjectType             `json:"project_type"`
+	ProjectLength         *models.ProjectLength           `json:"project_length"`
+	PaymentCurrency       *string                         `json:"payment_currency"`
+	PaymentRangeLower     *string                         `json:"payment_range_lower"`
+	PaymentRangeHigher    *string                         `json:"payment_range_higher"`
+	ExperienceLevel       *int                            `json:"experience_level"`
+	Status                *models.ProjectStatus           `json:"status"`
+	PaymentType           *models.PaymentType             `json:"payment_type"`
+	PaymentScheme         *models.PaymentScheme           `json:"payment_scheme"`
+	Country               *string                         `json:"country"`
+	Skills                []string                        `json:"skills" validate:"required"`
+	CausesTags            []string                        `json:"causes_tags"`
+	RemotePreference      *models.ProjectRemotePreference `json:"remote_preference" validate:"required"`
+	City                  *string                         `json:"city"`
+	WeeklyHoursLower      *string                         `json:"weekly_hours_lower"`
+	WeeklyHoursHigher     *string                         `json:"weekly_hours_higher"`
+	CommitmentHoursLower  *string                         `json:"commitment_hours_lower"`
+	CommitmentHoursHigher *string                         `json:"commitment_hours_higher"`
+	GeonameId             *int                            `json:"geoname_id"`
+	JobCategoryId         uuid.UUID                       `json:"job_category_id" validate:"required"`
+	Kind                  models.ProjectKind              `json:"kind"`
+	WorkSamples           []uuid.UUID                     `json:"work_samples" validate:"required"`
 }
 
 type ContractForm struct {

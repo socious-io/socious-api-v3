@@ -18,7 +18,7 @@ type WorkSampleDocuments struct {
 
 type WorkSampleType struct {
 	ServiceID uuid.UUID `db:"service_id" json:"service_id"`
-	Document  string    `db:"document" json:"document"`
+	Document  uuid.UUID `db:"document" json:"document"`
 }
 
 type Project struct {
@@ -34,7 +34,7 @@ type Project struct {
 	ExperienceLevel       *int                     `db:"experience_level" json:"experience_level"`
 	Status                *ProjectStatus           `db:"status" json:"status"`
 	PaymentType           *PaymentType             `db:"payment_type" json:"payment_type"`
-	PaymentScheme         PaymentScheme            `db:"payment_scheme" json:"payment_scheme"`
+	PaymentScheme         *PaymentScheme           `db:"payment_scheme" json:"payment_scheme"`
 	Country               *string                  `db:"country" json:"country"`
 	Skills                pq.StringArray           `db:"skills" json:"skills"`
 	CausesTags            pq.StringArray           `db:"causes_tags" json:"causes_tags"`
@@ -53,9 +53,6 @@ type Project struct {
 	JobCategoryId         *uuid.UUID               `db:"job_category_id" json:"job_category_id"`
 	ImpactJob             *bool                    `db:"impact_job" json:"impact_job"`
 	Promoted              *bool                    `db:"promoted" json:"promoted"`
-	ServiceTotalHours     *int                     `db:"service_total_hours" json:"service_total_hours"`
-	ServicePrice          *int                     `db:"service_price" json:"service_price"`
-	ServiceLength         *ServiceLength           `db:"service_length" json:"service_length"`
 	Kind                  ProjectKind              `db:"kind" json:"kind"`
 	WorkSamples           []WorkSampleDocuments    `db:"-" json:"work_samples"`
 
@@ -84,36 +81,56 @@ func (Project) FetchQuery() string {
 	return "projects/fetch"
 }
 
-func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Project, error) {
-
+func (p *Project) Create(ctx context.Context, workSamples []uuid.UUID) error {
 	tx, err := database.GetDB().Beginx()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	rows, err := database.TxQuery(
 		ctx,
 		tx,
-		"projects/create_service",
+		"projects/create",
 		p.IdentityID,
 		p.Title,
 		p.Description,
+		p.PaymentType,
+		p.PaymentScheme,
 		p.PaymentCurrency,
+		p.PaymentRangeLower,
+		p.PaymentRangeHigher,
+		p.ExperienceLevel,
+		p.Status,
+		p.RemotePreference,
+		p.ProjectType,
+		p.ProjectLength,
 		pq.Array(p.Skills),
+		pq.Array(p.CausesTags),
+		p.Country,
+		p.City,
+		p.GeonameId,
+		p.OtherPartyId,
+		p.OtherPartyTitle,
+		p.OtherPartyUrl,
+		p.ExpiresAt,
+		p.UpdatedAt,
+		p.WeeklyHoursLower,
+		p.WeeklyHoursHigher,
+		p.CommitmentHoursLower,
+		p.CommitmentHoursHigher,
 		p.JobCategoryId,
-		p.ServiceLength,
-		p.ServiceTotalHours,
-		p.ServicePrice,
+		p.Kind,
 	)
+
 	if err != nil {
 		tx.Rollback()
-		return nil, err
+		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		if err := rows.StructScan(p); err != nil {
 			tx.Rollback()
-			return nil, err
+			return err
 		}
 	}
 	rows.Close()
@@ -125,48 +142,64 @@ func (p *Project) CreateService(ctx context.Context, workSamples []string) (*Pro
 	if len(workSamplesData) > 0 {
 		if _, err = database.TxExecuteQuery(tx, "projects/create_work_samples", workSamplesData); err != nil {
 			tx.Rollback()
-			return nil, err
+			return err
 		}
 	}
 	rows.Close()
 	tx.Commit()
 
-	s, err := GetService(p.ID)
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
+	return database.Fetch(p, p.ID)
 }
 
-func (p *Project) UpdateService(ctx context.Context, workSamples []string) (*Project, error) {
+func (p *Project) Update(ctx context.Context, workSamples []uuid.UUID) error {
 
 	tx, err := database.GetDB().Beginx()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	rows, err := database.TxQuery(
 		ctx,
 		tx,
-		"projects/update_service",
+		"projects/update",
 		p.ID,
 		p.Title,
 		p.Description,
+		p.PaymentType,
+		p.PaymentScheme,
 		p.PaymentCurrency,
+		p.PaymentRangeLower,
+		p.PaymentRangeHigher,
+		p.ExperienceLevel,
+		p.Status,
+		p.RemotePreference,
+		p.ProjectType,
+		p.ProjectLength,
 		pq.Array(p.Skills),
+		pq.Array(p.CausesTags),
+		p.Country,
+		p.City,
+		p.GeonameId,
+		p.OtherPartyId,
+		p.OtherPartyTitle,
+		p.OtherPartyUrl,
+		p.ExpiresAt,
+		p.UpdatedAt,
+		p.WeeklyHoursLower,
+		p.WeeklyHoursHigher,
+		p.CommitmentHoursLower,
+		p.CommitmentHoursHigher,
 		p.JobCategoryId,
-		p.ServiceLength,
-		p.ServiceTotalHours,
-		p.ServicePrice,
 	)
+
 	if err != nil {
 		tx.Rollback()
-		return nil, err
+		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		if err := rows.StructScan(p); err != nil {
 			tx.Rollback()
-			return nil, err
+			return err
 		}
 	}
 	rows.Close()
@@ -177,7 +210,7 @@ func (p *Project) UpdateService(ctx context.Context, workSamples []string) (*Pro
 	)
 	if err != nil {
 		tx.Rollback()
-		return nil, err
+		return err
 	}
 	rows.Close()
 
@@ -188,17 +221,13 @@ func (p *Project) UpdateService(ctx context.Context, workSamples []string) (*Pro
 	if len(workSamplesData) > 0 {
 		if _, err = database.TxExecuteQuery(tx, "projects/create_work_samples", workSamplesData); err != nil {
 			tx.Rollback()
-			return nil, err
+			return err
 		}
 	}
 	rows.Close()
 	tx.Commit()
 
-	s, err := GetService(p.ID)
-	if err != nil {
-		return nil, err
-	}
-	return s, nil
+	return database.Fetch(p, p.ID)
 }
 
 func (p *Project) Delete(ctx context.Context) error {
@@ -210,32 +239,45 @@ func (p *Project) Delete(ctx context.Context) error {
 	return nil
 }
 
-func GetServices(userId uuid.UUID, p database.Paginate) ([]Project, int, error) {
+func GetProjects(identityId uuid.UUID, p database.Paginate) ([]Project, int, error) {
 	var (
-		services  = []Project{}
+		projects  = []Project{}
 		fetchList []database.FetchList
 		ids       []interface{}
 	)
 
-	if err := database.QuerySelect("projects/get_services", &fetchList, userId, p.Limit, p.Offet); err != nil {
-		return nil, 0, err
+	if len(p.Filters) > 0 {
+		var kind string
+		for _, filter := range p.Filters {
+			if filter.Key == "kind" {
+				kind = filter.Value
+			}
+		}
+		if err := database.QuerySelect("projects/get_by_kind", &fetchList, identityId, p.Limit, p.Offet, kind); err != nil {
+			return nil, 0, err
+		}
+
+	} else {
+		if err := database.QuerySelect("projects/get", &fetchList, identityId, p.Limit, p.Offet); err != nil {
+			return nil, 0, err
+		}
 	}
 
 	if len(fetchList) < 1 {
-		return services, 0, nil
+		return projects, 0, nil
 	}
 
 	for _, f := range fetchList {
 		ids = append(ids, f.ID)
 	}
 
-	if err := database.Fetch(&services, ids...); err != nil {
+	if err := database.Fetch(&projects, ids...); err != nil {
 		return nil, 0, err
 	}
-	return services, fetchList[0].TotalCount, nil
+	return projects, fetchList[0].TotalCount, nil
 }
 
-func GetService(id uuid.UUID) (*Project, error) {
+func GetProject(id uuid.UUID) (*Project, error) {
 	p := new(Project)
 	if err := database.Fetch(p, id); err != nil {
 		return nil, err
