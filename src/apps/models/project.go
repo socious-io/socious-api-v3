@@ -23,7 +23,7 @@ type WorkSampleType struct {
 
 type Project struct {
 	ID                    uuid.UUID                `db:"id" json:"id"`
-	IdentityID            uuid.UUID                `db:"identity_id" json:"identity_id"`
+	IdentityID            uuid.UUID                `db:"identity_id" json:"-"`
 	Title                 *string                  `db:"title" json:"title"`
 	Description           *string                  `db:"description" json:"description"`
 	ProjectType           *ProjectType             `db:"project_type" json:"project_type"`
@@ -61,8 +61,10 @@ type Project struct {
 	ExpiresAt *time.Time `db:"expires_at" json:"expires_at"`
 	DeletedAt *time.Time `db:"deleted_at" json:"deleted_at"`
 
-	WorkSamplesJson types.JSONText  `db:"work_samples" json:"-"`
-	JobCategoryJson *types.JSONText `db:"job_category" json:"job_category"`
+	WorkSamplesJson  types.JSONText  `db:"work_samples" json:"-"`
+	JobCategoryJson  *types.JSONText `db:"job_category" json:"job_category"`
+	IdentityType     string          `db:"identity_type" json:"identity_type"`
+	IdentityMetaJson types.JSONText  `db:"identity_meta" json:"identity_meta"`
 }
 type JobCategory struct {
 	ID                uuid.UUID `db:"id" json:"id"`
