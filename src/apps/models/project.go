@@ -49,6 +49,7 @@ type Project struct {
 	WeeklyHoursHigher     *string                  `db:"weekly_hours_higher" json:"weekly_hours_higher"`
 	CommitmentHoursLower  *string                  `db:"commitment_hours_lower" json:"commitment_hours_lower"`
 	CommitmentHoursHigher *string                  `db:"commitment_hours_higher" json:"commitment_hours_higher"`
+	PaymentMode           *PaymentModeType         `db:"payment_mode" json:"payment_mode"`
 	GeonameId             *int                     `db:"geoname_id" json:"geoname_id"`
 	JobCategoryId         *uuid.UUID               `db:"job_category_id" json:"job_category_id"`
 	ImpactJob             *bool                    `db:"impact_job" json:"impact_job"`
@@ -122,6 +123,7 @@ func (p *Project) Create(ctx context.Context, workSamples []uuid.UUID) error {
 		p.CommitmentHoursHigher,
 		p.JobCategoryId,
 		p.Kind,
+		p.PaymentMode,
 	)
 
 	if err != nil {
@@ -191,6 +193,7 @@ func (p *Project) Update(ctx context.Context, workSamples []uuid.UUID) error {
 		p.CommitmentHoursLower,
 		p.CommitmentHoursHigher,
 		p.JobCategoryId,
+		p.PaymentMode,
 	)
 
 	if err != nil {

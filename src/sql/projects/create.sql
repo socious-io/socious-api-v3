@@ -9,7 +9,7 @@ INSERT INTO projects (
     expires_at, updated_at,
     weekly_hours_lower, weekly_hours_higher,
     commitment_hours_lower, commitment_hours_higher,
-    job_category_id, kind
+    job_category_id, kind, payment_mode
 )
 VALUES (
     $1, $2, $3, 
@@ -22,6 +22,6 @@ VALUES (
     $22, $23,
     $24, $25,
     $26, $27,
-    $28, $29
+    $28, $29, $30
 )
 RETURNING *

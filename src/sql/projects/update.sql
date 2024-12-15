@@ -25,6 +25,7 @@ UPDATE projects p SET
     weekly_hours_higher=$25,
     commitment_hours_lower=$26,
     commitment_hours_higher=$27,
-    job_category_id=$28
+    job_category_id=$28,
+    payment_mode=$29
 WHERE id=$1
 RETURNING *
