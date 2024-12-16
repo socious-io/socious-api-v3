@@ -27,6 +27,7 @@ type ProjectForm struct {
 	WeeklyHoursHigher     *string                         `json:"weekly_hours_higher"`
 	CommitmentHoursLower  *string                         `json:"commitment_hours_lower"`
 	CommitmentHoursHigher *string                         `json:"commitment_hours_higher"`
+	PaymentMode           *models.PaymentModeType         `json:"payment_mode"`
 	GeonameId             *int                            `json:"geoname_id"`
 	JobCategoryId         uuid.UUID                       `json:"job_category_id" validate:"required"`
 	Kind                  models.ProjectKind              `json:"kind"`

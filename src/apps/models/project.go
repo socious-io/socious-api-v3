@@ -23,7 +23,7 @@ type WorkSampleType struct {
 
 type Project struct {
 	ID                    uuid.UUID                `db:"id" json:"id"`
-	IdentityID            uuid.UUID                `db:"identity_id" json:"identity_id"`
+	IdentityID            uuid.UUID                `db:"identity_id" json:"-"`
 	Title                 *string                  `db:"title" json:"title"`
 	Description           *string                  `db:"description" json:"description"`
 	ProjectType           *ProjectType             `db:"project_type" json:"project_type"`
@@ -49,12 +49,14 @@ type Project struct {
 	WeeklyHoursHigher     *string                  `db:"weekly_hours_higher" json:"weekly_hours_higher"`
 	CommitmentHoursLower  *string                  `db:"commitment_hours_lower" json:"commitment_hours_lower"`
 	CommitmentHoursHigher *string                  `db:"commitment_hours_higher" json:"commitment_hours_higher"`
+	PaymentMode           *PaymentModeType         `db:"payment_mode" json:"payment_mode"`
 	GeonameId             *int                     `db:"geoname_id" json:"geoname_id"`
 	JobCategoryId         *uuid.UUID               `db:"job_category_id" json:"job_category_id"`
 	ImpactJob             *bool                    `db:"impact_job" json:"impact_job"`
 	Promoted              *bool                    `db:"promoted" json:"promoted"`
 	Kind                  ProjectKind              `db:"kind" json:"kind"`
 	WorkSamples           []WorkSampleDocuments    `db:"-" json:"work_samples"`
+	Identity              *Identity                `db:"-" json:"identity"`
 
 	CreatedAt time.Time  `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time  `db:"updated_at" json:"updated_at"`
@@ -63,6 +65,7 @@ type Project struct {
 
 	WorkSamplesJson types.JSONText  `db:"work_samples" json:"-"`
 	JobCategoryJson *types.JSONText `db:"job_category" json:"job_category"`
+	IdentityJson    types.JSONText  `db:"identity" json:"-"`
 }
 type JobCategory struct {
 	ID                uuid.UUID `db:"id" json:"id"`
@@ -120,6 +123,7 @@ func (p *Project) Create(ctx context.Context, workSamples []uuid.UUID) error {
 		p.CommitmentHoursHigher,
 		p.JobCategoryId,
 		p.Kind,
+		p.PaymentMode,
 	)
 
 	if err != nil {
@@ -189,6 +193,7 @@ func (p *Project) Update(ctx context.Context, workSamples []uuid.UUID) error {
 		p.CommitmentHoursLower,
 		p.CommitmentHoursHigher,
 		p.JobCategoryId,
+		p.PaymentMode,
 	)
 
 	if err != nil {

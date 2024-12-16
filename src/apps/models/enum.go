@@ -328,3 +328,26 @@ func (pk *Currency) Scan(value interface{}) error {
 	}
 	return nil
 }
+
+type IdentityType string
+
+const (
+	IdentityTypeUsers         IdentityType = "users"
+	IdentityTypeOrganizations IdentityType = "organizations"
+)
+
+func (it *IdentityType) Scan(value interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*it = IdentityType(string(v))
+	case string:
+		*it = IdentityType(v)
+	default:
+		return fmt.Errorf("failed to scan type: %v", value)
+	}
+	return nil
+}
+
+func (it IdentityType) Value() (driver.Value, error) {
+	return string(it), nil
+}
