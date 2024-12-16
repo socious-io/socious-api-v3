@@ -56,16 +56,16 @@ type Project struct {
 	Promoted              *bool                    `db:"promoted" json:"promoted"`
 	Kind                  ProjectKind              `db:"kind" json:"kind"`
 	WorkSamples           []WorkSampleDocuments    `db:"-" json:"work_samples"`
+	Identity              *Identity                `db:"-" json:"identity"`
 
 	CreatedAt time.Time  `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time  `db:"updated_at" json:"updated_at"`
 	ExpiresAt *time.Time `db:"expires_at" json:"expires_at"`
 	DeletedAt *time.Time `db:"deleted_at" json:"deleted_at"`
 
-	WorkSamplesJson  types.JSONText  `db:"work_samples" json:"-"`
-	JobCategoryJson  *types.JSONText `db:"job_category" json:"job_category"`
-	IdentityType     string          `db:"identity_type" json:"identity_type"`
-	IdentityMetaJson types.JSONText  `db:"identity_meta" json:"identity_meta"`
+	WorkSamplesJson types.JSONText  `db:"work_samples" json:"-"`
+	JobCategoryJson *types.JSONText `db:"job_category" json:"job_category"`
+	IdentityJson    types.JSONText  `db:"identity" json:"-"`
 }
 type JobCategory struct {
 	ID                uuid.UUID `db:"id" json:"id"`

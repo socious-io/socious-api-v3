@@ -1,6 +1,6 @@
 SELECT p.*,
 row_to_json(jc.*) AS job_category,
-i.type  as identity_type, i.meta as identity_meta,
+row_to_json(i.*) AS identity,
 (
 	COALESCE(
 		(SELECT
