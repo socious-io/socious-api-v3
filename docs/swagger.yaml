@@ -238,6 +238,88 @@ components:
         - weeklyHoursHigher
         - weeklyHoursLower
       type: object
+    Contracts:
+      properties:
+        id:
+          type: string
+          example: 282bd9ef-73cf-4c4c-bcf0-09615930d408
+        name:
+          type: string
+          example: name
+        description:
+          type: string
+          example: Description of the Contract
+        type:
+          enum:
+            - VOLUNTEER
+            - PAID
+          type: string
+        total_amount:
+          type: number
+          example: 12.5
+        currency:
+          enum:
+            - USD
+            - JPY
+          type: string
+        crypto_currency:
+          type: string
+        currency_rate:
+          type: number
+          example: 12.5
+        commitment:
+          type: number
+          example: 1
+        commitment_period:
+          enum:
+            - HOURLY
+            - DAILY
+            - WEEKLY
+            - MONTHLY
+          type: string
+        commitment_period_count:
+          type: number
+          example: 1
+        payment_type:
+          enum:
+            - CRYPTO
+            - FIAT
+          type: string
+        applicant_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        project_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        client_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        status:
+          enum:
+            - CREATED
+            - CLIENT_APPROVED
+            - SIGNED
+            - PROVIDER_CANCELED
+            - CLIENT_CANCELED
+          type: string
+        provider_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        payment_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        offer_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        mission_id:
+          type: string
+          example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        created_at:
+          format: date-time
+          type: string
+        updated_at:
+          format: date-time
+          type: string
 paths:
   /services:
     get:
@@ -427,3 +509,180 @@ paths:
                   message:
                     type: string
                     example: success
+  /contracts:
+    get:
+      summary: Get all contracts
+      security:
+        - bearerAuth: []
+      description: Get all contracts
+      tags:
+        - Contracts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contracts'
+    post:
+      summary: Create contract
+      security:
+        - bearerAuth: []
+      description: Create contract
+      tags:
+        - Contracts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                title:
+                  type: string
+                  example: Title of the Contract
+                description:
+                  type: string
+                  example: Description of the Contract
+                type:
+                  enum:
+                    - VOLUNTEER
+                    - PAID
+                  type: string
+                total_amount:
+                  type: number
+                  example: 12.5
+                currency:
+                  enum:
+                    - USD
+                    - JPY
+                  type: string
+                crypto_currency:
+                  type: string
+                currency_rate:
+                  type: number
+                  example: 12.5
+                commitment:
+                  type: number
+                  example: 1
+                commitment_period:
+                  enum:
+                    - HOURLY
+                    - DAILY
+                    - WEEKLY
+                    - MONTHLY
+                  type: string
+                commitment_period_count:
+                  type: number
+                  example: 1
+                payment_type:
+                  enum:
+                    - CRYPTO
+                    - FIAT
+                  type: string
+                applicant_id:
+                  type: string
+                  example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+                project_id:
+                  type: string
+                  example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+                client_id:
+                  type: string
+                  example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contracts'
+  /contracts/:id:
+    parameters:
+        - name: id
+          required: true
+          in: path
+          description: Contract ID
+          schema:
+            type: string
+    get:
+      summary: Get contract
+      security:
+        - bearerAuth: []
+      description: Get contract
+      tags:
+        - Contracts
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contracts'
+    patch:
+      summary: Update contract
+      security:
+        - bearerAuth: []
+      description: Update contract
+      tags:
+        - Contracts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                title:
+                  type: string
+                  example: Title of the Contract
+                description:
+                  type: string
+                  example: Description of the Contract
+                type:
+                  enum:
+                    - VOLUNTEER
+                    - PAID
+                  type: string
+                total_amount:
+                  type: number
+                  example: 12.5
+                currency:
+                  enum:
+                    - USD
+                    - JPY
+                  type: string
+                crypto_currency:
+                  type: string
+                currency_rate:
+                  type: number
+                  example: 12.5
+                commitment:
+                  type: number
+                  example: 1
+                commitment_period:
+                  enum:
+                    - HOURLY
+                    - DAILY
+                    - WEEKLY
+                    - MONTHLY
+                  type: string
+                commitment_period_count:
+                  type: number
+                  example: 1
+                payment_type:
+                  enum:
+                    - CRYPTO
+                    - FIAT
+                  type: string
+                applicant_id:
+                  type: string
+                  example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+                project_id:
+                  type: string
+                  example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+                client_id:
+                  type: string
+                  example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contracts'

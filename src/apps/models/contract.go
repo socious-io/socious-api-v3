@@ -32,6 +32,8 @@ type Contract struct {
 	ApplicantID *uuid.UUID `db:"applicant_id" json:"applicant_id"`
 	ProjectID   *uuid.UUID `db:"project_id" json:"project_id"`
 	PaymentID   *uuid.UUID `db:"payment_id" json:"payment_id"`
+	OfferID     *uuid.UUID `db:"offer_id" json:"offer_id"`
+	MissionID   *uuid.UUID `db:"mission_id" json:"mission_id"`
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
