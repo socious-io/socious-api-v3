@@ -6,6 +6,7 @@ row_to_json(i.*) AS identity,
 		(SELECT
 			jsonb_agg(
 				json_build_object(
+				'id', m.id,
 				'url', m.url, 
 				'filename', m.filename
 				)
