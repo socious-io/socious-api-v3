@@ -17,15 +17,7 @@ const (
 )
 
 func (ps *ProjectStatus) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case []byte:
-		*ps = ProjectStatus(string(v))
-	case string:
-		*ps = ProjectStatus(v)
-	default:
-		return fmt.Errorf("failed to scan type: %v", value)
-	}
-	return nil
+	return scanEnum(value, (*string)(ps))
 }
 
 func (ps ProjectStatus) Value() (driver.Value, error) {
@@ -41,15 +33,7 @@ const (
 )
 
 func (pt *ProjectType) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case []byte:
-		*pt = ProjectType(string(v))
-	case string:
-		*pt = ProjectType(v)
-	default:
-		return fmt.Errorf("failed to scan type: %v", value)
-	}
-	return nil
+	return scanEnum(value, (*string)(pt))
 }
 
 func (pt ProjectType) Value() (driver.Value, error) {
@@ -64,15 +48,7 @@ const (
 )
 
 func (pmt *PaymentModeType) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case []byte:
-		*pmt = PaymentModeType(string(v))
-	case string:
-		*pmt = PaymentModeType(v)
-	default:
-		return fmt.Errorf("failed to scan type: %v", value)
-	}
-	return nil
+	return scanEnum(value, (*string)(pmt))
 }
 
 func (pmt PaymentModeType) Value() (driver.Value, error) {
@@ -338,17 +314,23 @@ const (
 )
 
 func (it *IdentityType) Scan(value interface{}) error {
-	switch v := value.(type) {
-	case []byte:
-		*it = IdentityType(string(v))
-	case string:
-		*it = IdentityType(v)
-	default:
-		return fmt.Errorf("failed to scan type: %v", value)
-	}
-	return nil
+	return scanEnum(value, (*string)(it))
 }
 
 func (it IdentityType) Value() (driver.Value, error) {
 	return string(it), nil
+}
+
+// scanEnum is a helper function that converts an interface{} value to a string
+// to support database scanning. It handles both byte slices and string values.
+func scanEnum(value interface{}, target interface{}) error {
+	switch v := value.(type) {
+	case []byte:
+		*target.(*string) = string(v) // Convert byte slice to string.
+	case string:
+		*target.(*string) = v // Assign string value.
+	default:
+		return fmt.Errorf("failed to scan type: %v", value) // Error on unsupported type.
+	}
+	return nil
 }
