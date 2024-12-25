@@ -2,11 +2,13 @@ package views
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"socious/src/apps/auth"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
 
+	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
@@ -44,8 +46,8 @@ func contractsGroup(router *gin.Engine) {
 	})
 
 	g.POST("", func(c *gin.Context) {
-		ctx, _ := c.Get("ctx")
-		u, _ := c.Get("user")
+		ctx := c.MustGet("ctx").(context.Context)
+		u := c.MustGet("user").(*models.User)
 
 		form := new(ContractForm)
 		if err := c.ShouldBindJSON(form); err != nil {
@@ -55,9 +57,9 @@ func contractsGroup(router *gin.Engine) {
 
 		contract := new(models.Contract)
 		utils.Copy(form, contract)
-		contract.ProviderID = u.(*models.User).ID
+		contract.ProviderID = u.ID
 
-		if err := contract.Create(ctx.(context.Context)); err != nil {
+		if err := contract.Create(ctx); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -92,5 +94,66 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 		c.JSON(http.StatusAccepted, contract)
+	})
+
+	g.POST("/:id/deposit", func(c *gin.Context) {
+		identity := c.MustGet("identity").(*models.Identity)
+		id := c.Param("id")
+
+		contract, err := models.GetContract(uuid.MustParse(id))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		payment, err := gopay.New(gopay.PaymentParams{
+			Tag:         contract.Name,
+			Description: *contract.Description,
+			Ref:         contract.ID.String(),
+			Currency:    gopay.Currency(contract.Currency),
+		})
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if _, err := payment.AddIdentity(gopay.IdentityParams{
+			ID:       identity.ID,
+			RoleName: "assigner",
+			Account:  "",
+			Amount:   0,
+		}); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		client, err := models.GetUser(contract.ClientID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("client fetch error : %v", err)})
+			return
+		}
+
+		account := *client.WalletAddress
+		if *contract.PaymentType == models.PaymentModeTypeFiat {
+			/* TODO: need to sycronise OAuth
+						const profile = await OAuthConnects.profile(ctx.offer.recipient_id, Data.OAuthProviders.STRIPE, { is_jp })
+			      transfers.amount = amounts.payout
+			      transfers.destination = profile.mui
+			*/
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Fiat not available now"})
+			return
+		}
+
+		if _, err := payment.AddIdentity(gopay.IdentityParams{
+			ID:       identity.ID,
+			RoleName: "assignee",
+			Account:  account,
+			Amount:   float64(contract.TotalAmount),
+		}); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 	})
 }

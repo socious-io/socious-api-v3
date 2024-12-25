@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/socious-io/gopay"
 	"gopkg.in/yaml.v2"
 )
 
@@ -36,6 +37,11 @@ type ConfigType struct {
 		Url   string `mapstructure:"url"`
 		Token string `mapstructure:"token"`
 	} `mapstructure:"nats"`
+
+	Payment struct {
+		Chains gopay.Chains `mapstructure:"chains"`
+		Fiats  gopay.Fiats  `mapstructure:"fiats"`
+	} `mapstructure:"payment"`
 }
 
 func Init(filename string) (*ConfigType, error) {

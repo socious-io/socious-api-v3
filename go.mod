@@ -35,6 +35,8 @@ require (
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/onsi/ginkgo/v2 v2.20.2 // indirect
 	github.com/onsi/gomega v1.34.2 // indirect
+	github.com/socious-io/gopay v0.0.5 // indirect
+	github.com/stripe/stripe-go/v81 v81.1.1 // indirect
 	go.mongodb.org/mongo-driver v1.14.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
