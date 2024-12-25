@@ -5,6 +5,8 @@ ALTER TABLE contracts
     ADD CONSTRAINT fk_offer FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE SET NULL,
     ADD CONSTRAINT fk_mission FOREIGN KEY (mission_id) REFERENCES missions(id) ON DELETE SET NULL;
 
+ALTER TYPE contract_status ADD VALUE 'COMPLETED';
+
 -- Add triggers
 CREATE OR REPLACE FUNCTION upsert_contract_on_offer() RETURNS trigger
     LANGUAGE plpgsql
@@ -13,6 +15,8 @@ DECLARE
     contract RECORD;
     project RECORD;
     contract_status TEXT;
+    v_commitment_period TEXT;
+    v_commitment_period_count INTEGER;
 BEGIN
     SELECT * INTO contract
     FROM contracts
@@ -30,30 +34,50 @@ BEGIN
         WHEN NEW.status='CANCELED' THEN 'PROVIDER_CANCELED'
         ELSE NULL
     END;
+
+    v_commitment_period := CASE
+        WHEN NEW.total_hours IS NOT NULL THEN 'HOURLY'
+        WHEN NEW.weekly_limit IS NOT NULL THEN 'WEEKLY'
+        ELSE NULL
+    END;
+
+    v_commitment_period_count := CASE
+        WHEN NEW.total_hours IS NOT NULL THEN NEW.total_hours
+        WHEN NEW.weekly_limit IS NOT NULL THEN NEW.weekly_limit
+        ELSE NULL
+    END;
+
+    IF project.id IS NULL OR contract_status IS NULL THEN
+        RETURN NEW; -- Exit the function
+    END IF;
+    
 	
-    IF contract.id IS NOT NULL AND project.id IS NOT NULL THEN
+    IF contract.id IS NOT NULL THEN
         UPDATE contracts
         SET
             offer_id=NEW.id,
-            name=NEW.offer_message,-- Is it same as description?
+            name=NEW.offer_message,
             description=NEW.offer_message,
             status=COALESCE(contract_status::contract_status, status),
             type=project.payment_type::payment_type::text::contract_type,
             currency=NEW.currency,
-            total_amount=NEW.assignment_total,
+            total_amount=COALESCE(NEW.assignment_total, 999),
             payment_type=NEW.payment_mode,
             project_id=NEW.project_id,
             client_id=NEW.recipient_id,
             provider_id=NEW.offerer_id,
             applicant_id=NEW.applicant_id,
-            commitment_period='HOURLY' -- Couldn't find the corresponding column?
+            currency_rate=NULL,
+            commitment=NULL,
+            commitment_period=v_commitment_period::text::contract_commitment_period,
+            commitment_period_count=v_commitment_period_count
         WHERE id = contract.id;
-    ELSEIF project.id IS NOT NULL THEN
+    ELSE
         INSERT INTO
         contracts
         (
             offer_id,
-            name,--?
+            name,
             description,
             status,
             type,
@@ -64,22 +88,28 @@ BEGIN
             client_id,
             provider_id,
             applicant_id,
-            commitment_period
+            currency_rate,
+            commitment,
+            commitment_period,
+            commitment_period_count
         )
         VALUES (
             NEW.id,
-            NEW.offer_message,--?
+            NEW.offer_message,
             NEW.offer_message,
             contract_status::contract_status,
             project.payment_type::payment_type::text::contract_type,
             NEW.currency,
-            NEW.assignment_total,
+            COALESCE(NEW.assignment_total, NULL),
             NEW.payment_mode,
             NEW.project_id,
             NEW.recipient_id,
             NEW.offerer_id,
             NEW.applicant_id,
-            'HOURLY' --?
+            NULL,
+            NULL,
+            v_commitment_period::text::contract_commitment_period,
+            v_commitment_period_count
         );
     END IF;
 
@@ -95,6 +125,8 @@ DECLARE
     offer RECORD;
     project RECORD;
     contract_status TEXT;
+    v_commitment_period TEXT;
+    v_commitment_period_count INTEGER;
 BEGIN
     SELECT * INTO contract
     FROM contracts
@@ -109,9 +141,27 @@ BEGIN
     WHERE id = NEW.offer_id;
 
     contract_status := CASE
-        WHEN NEW.status='ACTIVE' OR NEW.status='COMPLETE' OR NEW.status='CONFIRMED' THEN 'SIGNED'
+        WHEN NEW.status='ACTIVE' THEN 'SIGNED'
+        WHEN NEW.status='COMPLETE' OR NEW.status='CONFIRMED' THEN 'COMPLETED' --We can't differentiate between these
         WHEN NEW.status='CANCELED' THEN 'CLIENT_CANCELED'
         WHEN NEW.status='KICKED_OUT' THEN 'PROVIDER_CANCELED'
+        ELSE NULL
+    END;
+
+    
+    IF project.id IS NULL OR contract_status IS NULL OR offer.id IS NULL THEN
+        RETURN NEW; -- Exit the function
+    END IF;
+
+    v_commitment_period := CASE
+        WHEN offer.total_hours IS NOT NULL THEN 'HOURLY'
+        WHEN offer.weekly_limit IS NOT NULL THEN 'WEEKLY'
+        ELSE NULL
+    END;
+
+    v_commitment_period_count := CASE
+        WHEN offer.total_hours IS NOT NULL THEN offer.total_hours
+        WHEN offer.weekly_limit IS NOT NULL THEN offer.weekly_limit
         ELSE NULL
     END;
 
@@ -121,13 +171,13 @@ BEGIN
             mission_id=NEW.id,
             status=contract_status::contract_status
         WHERE id = contract.id;
-    ELSEIF offer.id IS NOT NULL AND project.id IS NOT NULL THEN
+    ELSE
         INSERT INTO
         contracts
         (
             offer_id,
             mission_id,
-            name, --?
+            name,
             description,
             status,
             type,
@@ -138,23 +188,29 @@ BEGIN
             client_id,
             provider_id,
             applicant_id,
-            commitment_period --?
+            currency_rate,
+            commitment,
+            commitment_period,
+            commitment_period_count
         )
         VALUES (
             offer.id,
             NEW.id,
-            offer.offer_message, --?
+            offer.offer_message,
             offer.offer_message,
             contract_status::contract_status,
             project.payment_type::payment_type::text::contract_type,
             offer.currency,
-            offer.assignment_total,
+            COALESCE(offer.assignment_total, NULL),
             offer.payment_mode,
             offer.project_id,
             offer.recipient_id,
             offer.offerer_id,
             offer.applicant_id,
-            'HOURLY' --?
+            NULL,
+            NULL,
+            v_commitment_period::text::contract_commitment_period,
+            v_commitment_period_count
         );
     END IF;
     RETURN NEW;
