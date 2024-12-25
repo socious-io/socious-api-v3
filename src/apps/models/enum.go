@@ -256,6 +256,7 @@ const (
 	ContractStatusSinged           ContractStatus = "SIGNED"
 	ContractStatusProviderCanceled ContractStatus = "PROVIDER_CANCELED"
 	ContractStatusClientCanceled   ContractStatus = "CLIENT_CANCELED"
+	ContractStatusCompleted        ContractStatus = "COMPLETED"
 )
 
 func (pk *ContractStatus) Scan(value interface{}) error {
