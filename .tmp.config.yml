@@ -29,5 +29,17 @@ payments:
     - name: STRIPE_JP
       api_key: secret_key
       service: STRIPE
+  chains: #TODO: Add the mapstructure in gopay
+    - name: Cardano
+      explorer: BLOCK_EXPLORER_URL
+      contract_address: CONTRACT_ADDRESS
+      tokens:
+        - name: Ethereum
+          symbol: ETH
+          address: blockchain_address
+          Decimals: 8
+      type: EVM/CARDANO
+      mode: MAINNET/TESTNET
+      api_key: api_key
   # connect_redirect: https://socious.io/api/v2/auth/stripe
   # client_connect_link: https://webapp2.socious.io/wallet
