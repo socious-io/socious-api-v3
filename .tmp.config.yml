@@ -21,3 +21,15 @@ cors:
 nats:
   url: nats://127.0.0.1:4222
   secret: secret
+payments:
+  fiats:
+    - name: STRIPE
+      api_key: secret_key
+      service: STRIPE
+      connect_redirect: https://socious.io/api/v2/auth/stripe
+      client_connect_link: https://webapp2.socious.io/wallet
+    - name: STRIPE_JP
+      api_key: secret_key
+      service: STRIPE
+      connect_redirect: https://socious.io/api/v2/auth/stripe
+      client_connect_link: https://webapp2.socious.io/wallet

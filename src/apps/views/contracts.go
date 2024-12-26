@@ -100,6 +100,12 @@ func contractsGroup(router *gin.Engine) {
 		identity := c.MustGet("identity").(*models.Identity)
 		id := c.Param("id")
 
+		form := new(ContractDepositForm)
+		if err := c.ShouldBindJSON(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		contract, err := models.GetContract(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -119,7 +125,7 @@ func contractsGroup(router *gin.Engine) {
 		}
 
 		if _, err := payment.AddIdentity(gopay.IdentityParams{
-			ID:       identity.ID,
+			ID:       identity.ID, // A:why they are same in 2 identities?
 			RoleName: "assigner",
 			Account:  "",
 			Amount:   0,
@@ -134,26 +140,45 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		account := *client.WalletAddress
+		var account *string
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
-			/* TODO: need to sycronise OAuth
-						const profile = await OAuthConnects.profile(ctx.offer.recipient_id, Data.OAuthProviders.STRIPE, { is_jp })
-			      transfers.amount = amounts.payout
-			      transfers.destination = profile.mui
-			*/
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Fiat not available now"})
-			return
+			var oauthProvider models.OauthConnectedProviders
+			switch contract.Currency {
+			case models.JPY:
+				oauthProvider = models.OauthConnectedProvidersStripeJp
+			case models.USD:
+				oauthProvider = models.OauthConnectedProvidersStripe
+			default:
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Currency is not supported"})
+			}
+			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, oauthProvider)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
+			}
+			account = &oauthConnect.MatrixUniqueId
+			payment.SetToFiatMode(string(models.PaymentServiceStripe))
+		} else {
+			account = client.WalletAddress
+			if account == nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on client"})
+			}
+			payment.SetToCryptoMode(*account, float64(contract.CurrencyRate))
 		}
 
 		if _, err := payment.AddIdentity(gopay.IdentityParams{
-			ID:       identity.ID,
+			ID:       identity.ID, // A:why they are same in 2 identities?
 			RoleName: "assignee",
-			Account:  account,
+			Account:  *account,
 			Amount:   float64(contract.TotalAmount),
 		}); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		if *contract.PaymentType == models.PaymentModeTypeFiat {
+			payment.Deposit()
+		} else {
+			payment.ConfirmDeposit(form.Txid)
+		}
 	})
 }

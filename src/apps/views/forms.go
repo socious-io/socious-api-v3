@@ -50,3 +50,7 @@ type ContractForm struct {
 	ProjectID             *uuid.UUID                      `json:"project_id"`
 	ClientID              uuid.UUID                       `json:"client_id" validate:"required"`
 }
+
+type ContractDepositForm struct {
+	Txid string `json:"txid" validate:"required,min=3"`
+}
