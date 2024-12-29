@@ -21,25 +21,25 @@ cors:
 nats:
   url: nats://127.0.0.1:4222
   secret: secret
-payments:
-  fiats: #TODO: Add the mapstructure in gopay
+payment:
+  fiats:
     - name: STRIPE
-      api_key: secret_key
+      apikey: sk_[test/live]_[key]
       service: STRIPE
     - name: STRIPE_JP
-      api_key: secret_key
+      apikey: sk_[test/live]_[key]
       service: STRIPE
-  chains: #TODO: Add the mapstructure in gopay
+  chains:
     - name: Cardano
       explorer: BLOCK_EXPLORER_URL
-      contract_address: CONTRACT_ADDRESS
+      contractaddress: CONTRACT_ADDRESS #Ask: is it the same as escrow in v2?
       tokens:
         - name: Ethereum
           symbol: ETH
           address: blockchain_address
-          Decimals: 8
-      type: EVM/CARDANO
+          decimals: 8
+      type: EVM/CARDANO # Ask: how should i set this up?
       mode: MAINNET/TESTNET
-      api_key: api_key
+      apikey: api_key # Ask: what is it
   # connect_redirect: https://socious.io/api/v2/auth/stripe
   # client_connect_link: https://webapp2.socious.io/wallet

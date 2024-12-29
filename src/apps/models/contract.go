@@ -17,9 +17,9 @@ type Contract struct {
 	Type   ContractType   `db:"type" json:"type"`
 	Status ContractStatus `db:"status" json:"status"`
 
-	TotalAmount           float32                  `db:"total_amount" json:"total_amount"`
+	TotalAmount           float64                  `db:"total_amount" json:"total_amount"`
 	Currency              Currency                 `db:"currency" json:"currency"`
-	CryptoCurrency        string                   `db:"crypto_currency" json:"crypto_currency"`
+	CryptoCurrency        *string                  `db:"crypto_currency" json:"crypto_currency"`
 	CurrencyRate          float32                  `db:"currency_rate" json:"currency_rate"`
 	Commitment            int                      `db:"commitment" json:"commitment"`
 	CommitmentPeriod      ContractCommitmentPeriod `db:"commitment_period" json:"commitment_period"`
@@ -32,6 +32,8 @@ type Contract struct {
 	ApplicantID *uuid.UUID `db:"applicant_id" json:"applicant_id"`
 	ProjectID   *uuid.UUID `db:"project_id" json:"project_id"`
 	PaymentID   *uuid.UUID `db:"payment_id" json:"payment_id"`
+	OfferID     *uuid.UUID `db:"offer_id" json:"-"`
+	MissionID   *uuid.UUID `db:"mission_id" json:"-"`
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`

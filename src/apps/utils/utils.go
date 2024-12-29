@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func Copy(src interface{}, dst interface{}) error {
@@ -50,4 +52,15 @@ func AppendIfNotExists[T comparable](arr []T, x T) []T {
 		arr = append(arr, x)
 	}
 	return arr
+}
+
+func SafeUUIDParse(input string) (u uuid.UUID, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to parse UUID: %v", r)
+		}
+	}()
+	// Use uuid.MustParse, which may panic
+	u = uuid.MustParse(input)
+	return u, nil
 }
