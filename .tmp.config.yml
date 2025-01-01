@@ -26,20 +26,22 @@ payment:
     - name: STRIPE
       apikey: sk_[test/live]_[key]
       service: STRIPE
+      return_url: stripe_return_url
     - name: STRIPE_JP
       apikey: sk_[test/live]_[key]
       service: STRIPE
+      return_url: stripe_return_url
   chains:
     - name: Cardano
       explorer: BLOCK_EXPLORER_URL
-      contractaddress: CONTRACT_ADDRESS #Ask: is it the same as escrow in v2?
+      contractaddress: CONTRACT_ADDRESS
       tokens:
         - name: Ethereum
           symbol: ETH
           address: blockchain_address
           decimals: 8
-      type: EVM/CARDANO # Ask: how should i set this up?
+      type: EVM
       mode: MAINNET/TESTNET
-      apikey: api_key # Ask: what is it
+      apikey: api_key
   # connect_redirect: https://socious.io/api/v2/auth/stripe
   # client_connect_link: https://webapp2.socious.io/wallet

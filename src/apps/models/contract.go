@@ -18,7 +18,7 @@ type Contract struct {
 	Status ContractStatus `db:"status" json:"status"`
 
 	TotalAmount           float64                  `db:"total_amount" json:"total_amount"`
-	Currency              Currency                 `db:"currency" json:"currency"`
+	Currency              *Currency                `db:"currency" json:"currency"`
 	CryptoCurrency        *string                  `db:"crypto_currency" json:"crypto_currency"`
 	CurrencyRate          float32                  `db:"currency_rate" json:"currency_rate"`
 	Commitment            int                      `db:"commitment" json:"commitment"`
@@ -102,6 +102,8 @@ func (c *Contract) Update(ctx context.Context) error {
 		c.CommitmentPeriod,
 		c.CommitmentPeriodCount,
 		c.PaymentType,
+		c.Status,
+		c.PaymentID,
 	)
 
 	if err != nil {

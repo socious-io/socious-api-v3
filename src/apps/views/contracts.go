@@ -99,6 +99,7 @@ func contractsGroup(router *gin.Engine) {
 	g.POST("/:id/deposit", func(c *gin.Context) {
 		identity := c.MustGet("identity").(*models.Identity)
 		id := c.Param("id")
+		ctx, _ := c.Get("ctx")
 
 		form := new(ContractDepositForm)
 		if err := c.ShouldBindJSON(form); err != nil {
@@ -124,7 +125,7 @@ func contractsGroup(router *gin.Engine) {
 			Description: *contract.Description,
 			Ref:         contract.ID.String(),
 			Type:        gopay.PaymentType(*contract.PaymentType),
-			Currency:    gopay.Currency(contract.Currency),
+			Currency:    gopay.Currency(*contract.Currency),
 			TotalAmount: contract.TotalAmount,
 		})
 
@@ -136,26 +137,20 @@ func contractsGroup(router *gin.Engine) {
 		var source_account, destination_account *string
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
 
-			customerCard, err := models.GetCard(*form.CardID, contract.ProviderID) //Ask: What is ClientID and ProviderID and who should pay to whom in services vs. jobs
+			//Set Source account
+			customerCard, err := models.GetCard(*form.CardID, contract.ProviderID)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe customer"})
 			}
 			source_account = customerCard.Customer
 
-			var oauthProvider models.OauthConnectedProviders
-			switch contract.Currency {
-			case models.JPY:
-				oauthProvider = models.OauthConnectedProvidersStripeJp
-			case models.USD:
-				oauthProvider = models.OauthConnectedProvidersStripe
-			default:
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Currency is not supported"})
-			}
-			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, oauthProvider) //Ask: What is ClientID and ProviderID and who should pay to whom in services vs. jobs
+			//Set Destination account
+			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, models.OauthConnectedProvidersStripeJp)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
 			}
 			destination_account = &oauthConnect.MatrixUniqueId
+
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {
 			destination_account = client.WalletAddress
@@ -188,12 +183,22 @@ func contractsGroup(router *gin.Engine) {
 
 		//Enroll the payment
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
-			err := payment.Deposit()
-			if err != nil {
-				fmt.Println(err)
-			}
+			err = payment.Deposit()
 		} else {
-			payment.ConfirmDeposit(*form.TxID)
+			err = payment.ConfirmDeposit(*form.TxID)
 		}
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+
+		//Updating contract
+		contract.PaymentID = &payment.ID
+		contract.Status = models.ContractStatusSinged
+		err = contract.Update(ctx.(context.Context))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		}
+
+		c.JSON(http.StatusOK, contract)
 	})
 }
