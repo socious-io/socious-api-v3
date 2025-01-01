@@ -107,12 +107,14 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
+		//Fetching Contract
 		contract, err := models.GetContract(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		//Fetching Client
 		client, err := models.GetUser(contract.ClientID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("client fetch error : %v", err)})
@@ -153,16 +155,16 @@ func contractsGroup(router *gin.Engine) {
 
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {
-			destination_account = client.WalletAddress
-			if destination_account == nil {
+			source_account = client.WalletAddress
+			if source_account == nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on client"})
 			}
-			payment.SetToCryptoMode(*destination_account, float64(contract.CurrencyRate))
+			payment.SetToCryptoMode(*contract.CryptoCurrency, float64(contract.CurrencyRate))
 		}
 
 		//Add Payment Identities
 		if _, err := payment.AddIdentity(gopay.IdentityParams{
-			ID:       identity.ID, // Ask: why they are same in 2 identities?
+			ID:       identity.ID,
 			RoleName: "assigner",
 			Account:  *source_account,
 			Amount:   0,
@@ -171,14 +173,17 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		if _, err := payment.AddIdentity(gopay.IdentityParams{
-			ID:       identity.ID, // Ask: why they are same in 2 identities?
-			RoleName: "assignee",
-			Account:  *destination_account,
-			Amount:   float64(contract.TotalAmount),
-		}); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+		//Only fiat payment needs second payment identity
+		if *contract.PaymentType == models.PaymentModeTypeFiat {
+			if _, err := payment.AddIdentity(gopay.IdentityParams{
+				ID:       identity.ID,
+				RoleName: "assignee",
+				Account:  *destination_account,
+				Amount:   float64(contract.TotalAmount),
+			}); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 		}
 
 		//Enroll the payment
