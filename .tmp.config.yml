@@ -26,11 +26,11 @@ payment:
     - name: STRIPE
       apikey: sk_[test/live]_[key]
       service: STRIPE
-      return_url: stripe_return_url
+      callback: stripe_return_url
     - name: STRIPE_JP
       apikey: sk_[test/live]_[key]
       service: STRIPE
-      return_url: stripe_return_url
+      callback: stripe_return_url
   chains:
     - name: Cardano
       explorer: BLOCK_EXPLORER_URL

@@ -189,6 +189,7 @@ func contractsGroup(router *gin.Engine) {
 		}
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
 
 		//Updating contract
