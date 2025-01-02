@@ -52,6 +52,7 @@ type ContractForm struct {
 }
 
 type ContractDepositForm struct {
-	CardID *uuid.UUID `json:"card_id" validate:"required"`
-	TxID   *string    `json:"txid" validate:"required"`
+	CardID *uuid.UUID   `json:"card_id" validate:"required"`
+	TxID   *string      `json:"txid" validate:"required"`
+	Meta   *interface{} `json:"meta" validate:"required"`
 }

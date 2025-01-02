@@ -69,7 +69,7 @@ BEGIN
             client_id=NEW.recipient_id,
             provider_id=NEW.offerer_id,
             applicant_id=NEW.applicant_id,
-            currency_rate=NEW.offer_rate,
+            currency_rate=COALESCE(NEW.offer_rate, 1),
             commitment_period=v_commitment_period::text::contract_commitment_period,
             commitment_period_count=v_commitment_period_count
         WHERE id = contract.id;
@@ -90,6 +90,7 @@ BEGIN
             client_id,
             provider_id,
             applicant_id,
+            currency_rate,
             commitment_period,
             commitment_period_count
         )
@@ -107,6 +108,7 @@ BEGIN
             NEW.recipient_id,
             NEW.offerer_id,
             NEW.applicant_id,
+            COALESCE(NEW.offer_rate, 1),
             v_commitment_period::text::contract_commitment_period,
             v_commitment_period_count
         );
@@ -202,7 +204,7 @@ BEGIN
             project.payment_type::payment_type::text::contract_type,
             offer.currency,
             offer.crypto_currency_address,
-            offer.offer_rate,
+            COALESCE(offer.offer_rate, 1),
             COALESCE(offer.assignment_total, NULL),
             offer.payment_mode,
             NEW.project_id,

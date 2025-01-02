@@ -121,13 +121,24 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
+		//Determine Currency
+		var currency gopay.Currency
+		if contract.Currency == nil && *contract.PaymentType == models.PaymentModeTypeFiat {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Currency is nil in Fiat payment : %v", err)})
+		} else if contract.Currency == nil {
+			//Default payment is set not to prevent the runtime from crashing while its empty
+			currency = gopay.JPY
+		} else {
+			currency = gopay.Currency(*contract.Currency)
+		}
+
 		//Start a payment session
 		payment, err := gopay.New(gopay.PaymentParams{
 			Tag:         contract.Name,
 			Description: *contract.Description,
 			Ref:         contract.ID.String(),
 			Type:        gopay.PaymentType(*contract.PaymentType),
-			Currency:    gopay.Currency(*contract.Currency),
+			Currency:    currency,
 			TotalAmount: contract.TotalAmount,
 		})
 
@@ -138,7 +149,6 @@ func contractsGroup(router *gin.Engine) {
 
 		var source_account, destination_account *string
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
-
 			//Set Source account
 			customerCard, err := models.GetCard(*form.CardID, contract.ProviderID)
 			if err != nil {
@@ -190,7 +200,7 @@ func contractsGroup(router *gin.Engine) {
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
 			err = payment.Deposit()
 		} else {
-			err = payment.ConfirmDeposit(*form.TxID)
+			err = payment.ConfirmDeposit(*form.TxID, form.Meta)
 		}
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
