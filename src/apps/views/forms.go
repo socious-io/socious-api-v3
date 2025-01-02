@@ -38,7 +38,7 @@ type ContractForm struct {
 	Title                 string                          `json:"title" validate:"required,min=3"`
 	Description           string                          `json:"description"`
 	Type                  models.ContractType             `json:"type" validate:"required"`
-	TotalAmount           float32                         `json:"total_amount"`
+	TotalAmount           float64                         `json:"total_amount"`
 	Currency              models.Currency                 `json:"currency"`
 	CryptoCurrency        string                          `json:"crypto_currency"`
 	CurrencyRate          float32                         `json:"currency_rate"`
@@ -49,4 +49,10 @@ type ContractForm struct {
 	ApplicantID           *uuid.UUID                      `json:"applicant_id"`
 	ProjectID             *uuid.UUID                      `json:"project_id"`
 	ClientID              uuid.UUID                       `json:"client_id" validate:"required"`
+}
+
+type ContractDepositForm struct {
+	CardID *uuid.UUID   `json:"card_id" validate:"required"`
+	TxID   *string      `json:"txid" validate:"required"`
+	Meta   *interface{} `json:"meta" validate:"required"`
 }
