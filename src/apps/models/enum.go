@@ -321,6 +321,37 @@ func (it IdentityType) Value() (driver.Value, error) {
 	return string(it), nil
 }
 
+type UserStatus string
+
+const (
+	UserStatusActive   UserStatus = "ACTIVE"
+	UserStatusInactive UserStatus = "INACTIVE"
+	UserStatusSuspend  UserStatus = "SUSPEND"
+)
+
+func (us *UserStatus) Scan(value interface{}) error {
+	return scanEnum(value, (*string)(us))
+}
+
+func (us UserStatus) Value() (driver.Value, error) {
+	return string(us), nil
+}
+
+type OauthConnectedProviders string
+
+const (
+	OauthConnectedProvidersStripe   OauthConnectedProviders = "STRIPE"
+	OauthConnectedProvidersStripeJp OauthConnectedProviders = "STRIPE_JP"
+)
+
+func (ocp *OauthConnectedProviders) Scan(value interface{}) error {
+	return scanEnum(value, (*string)(ocp))
+}
+
+func (ocp OauthConnectedProviders) Value() (driver.Value, error) {
+	return string(ocp), nil
+}
+
 // scanEnum is a helper function that converts an interface{} value to a string
 // to support database scanning. It handles both byte slices and string values.
 func scanEnum(value interface{}, target interface{}) error {

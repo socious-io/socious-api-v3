@@ -301,6 +301,8 @@ components:
             - SIGNED
             - PROVIDER_CANCELED
             - CLIENT_CANCELED
+            - APPLIED
+            - COMPLETED
           type: string
         provider_id:
           type: string
@@ -679,6 +681,39 @@ paths:
                 client_id:
                   type: string
                   example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contracts'
+  /contracts/:id/deposit:
+    parameters:
+        - name: id
+          required: true
+          in: path
+          description: Contract ID
+          schema:
+            type: string
+    post:
+      summary: Deposit on contract
+      security:
+        - bearerAuth: []
+      description: Deposit on contract
+      tags:
+        - Contracts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                card_id:
+                  type: string
+                  example: The selected card to deposit (fiat)
+                txid:
+                  type: string
+                  example: The transaction hash (crypto)
       responses:
         '200':
           description: Successful response
