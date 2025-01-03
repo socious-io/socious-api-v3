@@ -10,6 +10,7 @@ UPDATE contracts SET
   commitment_period_count=$10,
   payment_type=$11,
   status=COALESCE($12, status),
-  payment_id=COALESCE($13, payment_id)
+  payment_id=COALESCE($13, payment_id),
+  requirement_description=$14
 WHERE id=$1
 RETURNING *

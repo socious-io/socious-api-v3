@@ -9,6 +9,17 @@ import (
 	database "github.com/socious-io/pkg_database"
 )
 
+type RequirementFiles struct {
+	Id       string `db:"id" json:"id"`
+	Url      string `db:"url" json:"url"`
+	Filename string `db:"filename" json:"filename"`
+}
+
+type RequirementFileType struct {
+	ContractID uuid.UUID `db:"contract_id" json:"contract_id"`
+	Document   uuid.UUID `db:"document" json:"document"`
+}
+
 type Contract struct {
 	ID          uuid.UUID `db:"id" json:"id"`
 	Name        string    `db:"name" json:"name"`
@@ -26,6 +37,9 @@ type Contract struct {
 	CommitmentPeriodCount int                      `db:"commitment_period_count" json:"commitment_period_count"`
 	PaymentType           *PaymentModeType         `db:"payment_type" json:"payment_type"`
 
+	RequirementDescription *string            `db:"requirement_description" json:"requirement_description"`
+	RequirementFiles       []RequirementFiles `db:"-" json:"requirement_files"`
+
 	ProviderID uuid.UUID `db:"provider_id" json:"provider_id"`
 	ClientID   uuid.UUID `db:"client_id" json:"client_id"`
 
@@ -38,11 +52,12 @@ type Contract struct {
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 
-	PaymentJson   types.JSONText `db:"payment" json:"-"`
-	ProviderJson  types.JSONText `db:"provider" json:"-"`
-	ClientJson    types.JSONText `db:"client" json:"-"`
-	ProjectJson   types.JSONText `db:"project" json:"-"`
-	ApplicantJson types.JSONText `db:"applicant" json:"-"`
+	PaymentJson          types.JSONText `db:"payment" json:"-"`
+	ProviderJson         types.JSONText `db:"provider" json:"-"`
+	ClientJson           types.JSONText `db:"client" json:"-"`
+	ProjectJson          types.JSONText `db:"project" json:"-"`
+	ApplicantJson        types.JSONText `db:"applicant" json:"-"`
+	RequirementFilesJson types.JSONText `db:"requirement_files" json:"-"`
 }
 
 func (Contract) TableName() string {
@@ -87,9 +102,16 @@ func (c *Contract) Create(ctx context.Context) error {
 	return database.Fetch(c, c.ID)
 }
 
-func (c *Contract) Update(ctx context.Context) error {
-	rows, err := database.Query(
+func (c *Contract) Update(ctx context.Context, requirementFiles []uuid.UUID) error {
+
+	tx, err := database.GetDB().Beginx()
+	if err != nil {
+		return err
+	}
+
+	rows, err := database.TxQuery(
 		ctx,
+		tx,
 		"contracts/update",
 		c.ID,
 		c.Name,
@@ -104,17 +126,48 @@ func (c *Contract) Update(ctx context.Context) error {
 		c.PaymentType,
 		c.Status,
 		c.PaymentID,
+		c.RequirementDescription,
 	)
 
 	if err != nil {
+		tx.Rollback()
 		return err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		if err := rows.StructScan(c); err != nil {
+			tx.Rollback()
 			return err
 		}
 	}
+	rows.Close()
+
+	//delete and recreate files
+	rows, err = database.TxQuery(ctx, tx, "contracts/delete_requirement_files",
+		c.ID,
+	)
+	if err != nil {
+		tx.Rollback()
+
+		return err
+	}
+	rows.Close()
+
+	requirementFilesData := []RequirementFileType{}
+	for _, requirementFile := range requirementFiles {
+		requirementFilesData = append(requirementFilesData, RequirementFileType{ContractID: c.ID, Document: requirementFile})
+	}
+
+	if len(requirementFilesData) > 0 {
+		if _, err = database.TxExecuteQuery(tx, "contracts/create_requirement_file", requirementFilesData); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	rows.Close()
+
+	tx.Commit()
+
 	return database.Fetch(c, c.ID)
 }
 

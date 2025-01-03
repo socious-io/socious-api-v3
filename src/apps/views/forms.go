@@ -56,3 +56,8 @@ type ContractDepositForm struct {
 	TxID   *string      `json:"txid" validate:"required"`
 	Meta   *interface{} `json:"meta" validate:"required"`
 }
+
+type ContractRequirementsForm struct {
+	RequirementDescription string      `json:"requirement_description" validate:"required"`
+	RequirementFiles       []uuid.UUID `json:"requirement_files" validate:"required"`
+}
