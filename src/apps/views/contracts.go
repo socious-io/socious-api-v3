@@ -125,6 +125,7 @@ func contractsGroup(router *gin.Engine) {
 		var currency gopay.Currency
 		if contract.Currency == nil && *contract.PaymentType == models.PaymentModeTypeFiat {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Currency is nil in Fiat payment : %v", err)})
+			return
 		} else if contract.Currency == nil {
 			//Default payment is set not to prevent the runtime from crashing while its empty
 			currency = gopay.JPY
@@ -153,6 +154,7 @@ func contractsGroup(router *gin.Engine) {
 			customerCard, err := models.GetCard(*form.CardID, contract.ProviderID)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe customer"})
+				return
 			}
 			source_account = customerCard.Customer
 
@@ -160,6 +162,7 @@ func contractsGroup(router *gin.Engine) {
 			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, models.OauthConnectedProvidersStripeJp)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
+				return
 			}
 			destination_account = &oauthConnect.MatrixUniqueId
 
@@ -168,6 +171,7 @@ func contractsGroup(router *gin.Engine) {
 			source_account = client.WalletAddress
 			if source_account == nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on client"})
+				return
 			}
 			payment.SetToCryptoMode(*contract.CryptoCurrency, float64(contract.CurrencyRate))
 		}
@@ -213,6 +217,7 @@ func contractsGroup(router *gin.Engine) {
 		err = contract.Update(ctx.(context.Context))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
 		}
 
 		c.JSON(http.StatusOK, contract)
