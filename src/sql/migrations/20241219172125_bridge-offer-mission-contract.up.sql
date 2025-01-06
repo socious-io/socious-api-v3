@@ -41,13 +41,13 @@ BEGIN
         WHEN NEW.total_hours IS NOT NULL THEN 'HOURLY'
         WHEN NEW.weekly_limit IS NOT NULL THEN 'WEEKLY'
         ELSE NULL
-    END;
+    END; --Fix: Fix calculation
 
     v_commitment_period_count := CASE
         WHEN NEW.total_hours IS NOT NULL THEN NEW.total_hours
         WHEN NEW.weekly_limit IS NOT NULL THEN NEW.weekly_limit
         ELSE NULL
-    END;
+    END; --Fix: Fix calculation
 
     IF project.id IS NULL OR contract_status IS NULL THEN
         RETURN NEW; -- Exit the function
@@ -68,15 +68,16 @@ BEGIN
             type=project.payment_type::payment_type::text::contract_type,
             currency=NEW.currency,
             crypto_currency=NEW.crypto_currency_address,
-            total_amount=COALESCE(NEW.assignment_total, 999),
+            total_amount=COALESCE(NEW.assignment_total, 0),
             payment_type=NEW.payment_mode,
             project_id=NEW.project_id,
             client_id=NEW.recipient_id,
             provider_id=NEW.offerer_id,
             applicant_id=NEW.applicant_id,
             currency_rate=COALESCE(NEW.offer_rate, 1),
-            commitment_period=v_commitment_period::text::contract_commitment_period,
-            commitment_period_count=v_commitment_period_count
+            commitment=COALESCE(v_commitment_period_count, 1),--FIX
+            commitment_period=COALESCE(v_commitment_period::text::contract_commitment_period, 'HOURLY'),
+            commitment_period_count=COALESCE(v_commitment_period_count, 1)
         WHERE id = contract.id;
     ELSE
         INSERT INTO
@@ -96,6 +97,7 @@ BEGIN
             provider_id,
             applicant_id,
             currency_rate,
+            commitment,
             commitment_period,
             commitment_period_count
         )
@@ -107,15 +109,16 @@ BEGIN
             project.payment_type::payment_type::text::contract_type,
             NEW.currency,
             NEW.crypto_currency_address,
-            COALESCE(NEW.assignment_total, NULL),
+            COALESCE(NEW.assignment_total, 0),
             NEW.payment_mode,
             NEW.project_id,
             NEW.recipient_id,
             NEW.offerer_id,
             NEW.applicant_id,
             COALESCE(NEW.offer_rate, 1),
-            v_commitment_period::text::contract_commitment_period,
-            v_commitment_period_count
+            COALESCE(v_commitment_period_count, 1), --FIX
+            COALESCE(v_commitment_period::text::contract_commitment_period, 'HOURLY'),
+            COALESCE(v_commitment_period_count, 1)
         );
     END IF;
 
@@ -203,6 +206,7 @@ BEGIN
             client_id,
             provider_id,
             applicant_id,
+            commitment,
             commitment_period,
             commitment_period_count
         )
@@ -216,14 +220,15 @@ BEGIN
             offer.currency,
             offer.crypto_currency_address,
             COALESCE(offer.offer_rate, 1),
-            COALESCE(offer.assignment_total, NULL),
+            COALESCE(offer.assignment_total, 0),
             offer.payment_mode,
             NEW.project_id,
             NEW.assignee_id,
             NEW.assigner_id,
             NEW.applicant_id,
-            v_commitment_period::text::contract_commitment_period,
-            v_commitment_period_count
+            COALESCE(v_commitment_period_count, 1), --FIX
+            COALESCE(v_commitment_period::text::contract_commitment_period, 'HOURLY'),
+            COALESCE(v_commitment_period_count, 1)
         );
     END IF;
     RETURN NEW;
