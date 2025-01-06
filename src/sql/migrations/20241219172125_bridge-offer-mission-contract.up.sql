@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION upsert_contract_on_offer() RETURNS trigger
 DECLARE
     contract RECORD;
     project RECORD;
+    contract_name TEXT;
     contract_status TEXT;
     v_commitment_period TEXT;
     v_commitment_period_count INTEGER;
@@ -51,13 +52,17 @@ BEGIN
     IF project.id IS NULL OR contract_status IS NULL THEN
         RETURN NEW; -- Exit the function
     END IF;
-    
+
+    contract_name := CASE
+        WHEN char_length(NEW.offer_message) > 128 THEN substring(NEW.offer_message FROM 1 FOR 125) || '...'
+        ELSE NEW.offer_message
+    END;
 	
     IF contract.id IS NOT NULL THEN
         UPDATE contracts
         SET
             offer_id=NEW.id,
-            name=NEW.offer_message,
+            name=contract_name,
             description=NEW.offer_message,
             status=COALESCE(contract_status::contract_status, status),
             type=project.payment_type::payment_type::text::contract_type,
@@ -96,7 +101,7 @@ BEGIN
         )
         VALUES (
             NEW.id,
-            NEW.offer_message,
+            contract_name,
             NEW.offer_message,
             contract_status::contract_status,
             project.payment_type::payment_type::text::contract_type,
@@ -125,6 +130,7 @@ DECLARE
     contract RECORD;
     offer RECORD;
     project RECORD;
+    contract_name TEXT;
     contract_status TEXT;
     v_commitment_period TEXT;
     v_commitment_period_count INTEGER;
@@ -167,6 +173,11 @@ BEGIN
         ELSE NULL
     END;
 
+    contract_name := CASE
+        WHEN char_length(offer.offer_message) > 128 THEN substring(offer.offer_message FROM 1 FOR 125) || '...'
+        ELSE offer.offer_message
+    END;
+
     IF contract.id IS NOT NULL THEN
         UPDATE contracts
         SET
@@ -198,7 +209,7 @@ BEGIN
         VALUES (
             NEW.id,
             NEW.offer_id,
-            offer.offer_message,
+            contract_name,
             offer.offer_message,
             contract_status::contract_status,
             project.payment_type::payment_type::text::contract_type,
