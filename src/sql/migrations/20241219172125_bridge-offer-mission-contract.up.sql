@@ -5,6 +5,7 @@ ALTER TABLE contracts
     ADD CONSTRAINT fk_offer FOREIGN KEY (offer_id) REFERENCES offers(id) ON DELETE SET NULL,
     ADD CONSTRAINT fk_mission FOREIGN KEY (mission_id) REFERENCES missions(id) ON DELETE SET NULL;
 
+ALTER TYPE contract_status ADD VALUE 'APPLIED';
 ALTER TYPE contract_status ADD VALUE 'COMPLETED';
 
 -- Add triggers
@@ -61,14 +62,14 @@ BEGIN
             status=COALESCE(contract_status::contract_status, status),
             type=project.payment_type::payment_type::text::contract_type,
             currency=NEW.currency,
+            crypto_currency=NEW.crypto_currency_address,
             total_amount=COALESCE(NEW.assignment_total, 999),
             payment_type=NEW.payment_mode,
             project_id=NEW.project_id,
             client_id=NEW.recipient_id,
             provider_id=NEW.offerer_id,
             applicant_id=NEW.applicant_id,
-            currency_rate=NULL,
-            commitment=NULL,
+            currency_rate=COALESCE(NEW.offer_rate, 1),
             commitment_period=v_commitment_period::text::contract_commitment_period,
             commitment_period_count=v_commitment_period_count
         WHERE id = contract.id;
@@ -82,6 +83,7 @@ BEGIN
             status,
             type,
             currency,
+            crypto_currency,
             total_amount,
             payment_type,
             project_id,
@@ -89,7 +91,6 @@ BEGIN
             provider_id,
             applicant_id,
             currency_rate,
-            commitment,
             commitment_period,
             commitment_period_count
         )
@@ -100,14 +101,14 @@ BEGIN
             contract_status::contract_status,
             project.payment_type::payment_type::text::contract_type,
             NEW.currency,
+            NEW.crypto_currency_address,
             COALESCE(NEW.assignment_total, NULL),
             NEW.payment_mode,
             NEW.project_id,
             NEW.recipient_id,
             NEW.offerer_id,
             NEW.applicant_id,
-            NULL,
-            NULL,
+            COALESCE(NEW.offer_rate, 1),
             v_commitment_period::text::contract_commitment_period,
             v_commitment_period_count
         );
@@ -142,7 +143,8 @@ BEGIN
 
     contract_status := CASE
         WHEN NEW.status='ACTIVE' THEN 'SIGNED'
-        WHEN NEW.status='COMPLETE' OR NEW.status='CONFIRMED' THEN 'COMPLETED' --We can't differentiate between these
+        WHEN NEW.status='COMPLETE' THEN 'APPLIED'
+        WHEN NEW.status='CONFIRMED' THEN 'COMPLETED'
         WHEN NEW.status='CANCELED' THEN 'CLIENT_CANCELED'
         WHEN NEW.status='KICKED_OUT' THEN 'PROVIDER_CANCELED'
         ELSE NULL
@@ -175,40 +177,40 @@ BEGIN
         INSERT INTO
         contracts
         (
-            offer_id,
             mission_id,
+            offer_id,
             name,
             description,
             status,
             type,
             currency,
+            crypto_currency,
+            currency_rate,
             total_amount,
             payment_type,
             project_id,
             client_id,
             provider_id,
             applicant_id,
-            currency_rate,
-            commitment,
             commitment_period,
             commitment_period_count
         )
         VALUES (
-            offer.id,
             NEW.id,
+            NEW.offer_id,
             offer.offer_message,
             offer.offer_message,
             contract_status::contract_status,
             project.payment_type::payment_type::text::contract_type,
             offer.currency,
+            offer.crypto_currency_address,
+            COALESCE(offer.offer_rate, 1),
             COALESCE(offer.assignment_total, NULL),
             offer.payment_mode,
-            offer.project_id,
-            offer.recipient_id,
-            offer.offerer_id,
-            offer.applicant_id,
-            NULL,
-            NULL,
+            NEW.project_id,
+            NEW.assignee_id,
+            NEW.assigner_id,
+            NEW.applicant_id,
             v_commitment_period::text::contract_commitment_period,
             v_commitment_period_count
         );
