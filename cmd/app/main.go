@@ -1,10 +1,13 @@
 package main
 
 import (
+	"log"
 	"socious/src/apps"
 	"socious/src/config"
-	"socious/src/database"
 	"time"
+
+	"github.com/socious-io/gopay"
+	database "github.com/socious-io/pkg_database"
 )
 
 func main() {
@@ -16,6 +19,15 @@ func main() {
 		Interval:    30 * time.Second,
 		Timeout:     5 * time.Second,
 	})
+
+	if err := gopay.Setup(gopay.Config{
+		DB:     database.GetDB(),
+		Prefix: "gopay",
+		Chains: config.Config.Payment.Chains,
+		Fiats:  config.Config.Payment.Fiats,
+	}); err != nil {
+		log.Fatalf("gopay error %v", err)
+	}
 
 	apps.Serve()
 }

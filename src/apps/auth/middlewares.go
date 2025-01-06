@@ -2,10 +2,12 @@ package auth
 
 import (
 	"net/http"
+	"socious/src/apps/models"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func LoginRequired() gin.HandlerFunc {
@@ -31,12 +33,30 @@ func LoginRequired() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
 
-		c.Set("user_id", claims.ID)
+		u, err := models.GetUser(uuid.MustParse(claims.ID))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		c.Set("user", u)
+
+		//Safeguarding Identity if it was empty
+		var identity *models.Identity
+		identityStr := c.GetHeader(http.CanonicalHeaderKey("current-identity"))
+		identityUUID, err := uuid.Parse(identityStr)
+		if err == nil {
+			identity, err = models.GetIdentity(identityUUID)
+		} else {
+			identity, err = models.GetIdentity(u.ID)
+		}
+
+		c.Set("identity", identity)
 		c.Next()
 	}
 }
