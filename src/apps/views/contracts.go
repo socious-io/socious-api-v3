@@ -99,18 +99,48 @@ func contractsGroup(router *gin.Engine) {
 	g.POST("/:id/deposit", func(c *gin.Context) {
 		identity := c.MustGet("identity").(*models.Identity)
 		id := c.Param("id")
+		ctx, _ := c.Get("ctx")
 
+		form := new(ContractDepositForm)
+		if err := c.ShouldBindJSON(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//Fetching Contract
 		contract, err := models.GetContract(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		//Fetching Client
+		client, err := models.GetUser(contract.ClientID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("client fetch error : %v", err)})
+			return
+		}
+
+		//Determine Currency
+		var currency gopay.Currency
+		if contract.Currency == nil && *contract.PaymentType == models.PaymentModeTypeFiat {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Currency is nil in Fiat payment : %v", err)})
+			return
+		} else if contract.Currency == nil {
+			//Default payment is set not to prevent the runtime from crashing while its empty
+			currency = gopay.JPY
+		} else {
+			currency = gopay.Currency(*contract.Currency)
+		}
+
+		//Start a payment session
 		payment, err := gopay.New(gopay.PaymentParams{
 			Tag:         contract.Name,
 			Description: *contract.Description,
 			Ref:         contract.ID.String(),
-			Currency:    gopay.Currency(contract.Currency),
+			Type:        gopay.PaymentType(*contract.PaymentType),
+			Currency:    currency,
+			TotalAmount: contract.TotalAmount,
 		})
 
 		if err != nil {
@@ -118,42 +148,78 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
+		var source_account, destination_account *string
+		if *contract.PaymentType == models.PaymentModeTypeFiat {
+			//Set Source account
+			customerCard, err := models.GetCard(*form.CardID, contract.ProviderID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe customer"})
+				return
+			}
+			source_account = customerCard.Customer
+
+			//Set Destination account
+			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, models.OauthConnectedProvidersStripeJp)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
+				return
+			}
+			destination_account = &oauthConnect.MatrixUniqueId
+
+			payment.SetToFiatMode(string(oauthConnect.Provider))
+		} else {
+			source_account = client.WalletAddress
+			if source_account == nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on client"})
+				return
+			}
+			payment.SetToCryptoMode(*contract.CryptoCurrency, float64(contract.CurrencyRate))
+		}
+
+		//Add Payment Identities
 		if _, err := payment.AddIdentity(gopay.IdentityParams{
 			ID:       identity.ID,
 			RoleName: "assigner",
-			Account:  "",
+			Account:  *source_account,
 			Amount:   0,
 		}); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		client, err := models.GetUser(contract.ClientID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("client fetch error : %v", err)})
-			return
-		}
-
-		account := *client.WalletAddress
+		//Only fiat payment needs second payment identity
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
-			/* TODO: need to sycronise OAuth
-						const profile = await OAuthConnects.profile(ctx.offer.recipient_id, Data.OAuthProviders.STRIPE, { is_jp })
-			      transfers.amount = amounts.payout
-			      transfers.destination = profile.mui
-			*/
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Fiat not available now"})
-			return
+			if _, err := payment.AddIdentity(gopay.IdentityParams{
+				ID:       identity.ID,
+				RoleName: "assignee",
+				Account:  *destination_account,
+				Amount:   float64(contract.TotalAmount),
+			}); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 		}
 
-		if _, err := payment.AddIdentity(gopay.IdentityParams{
-			ID:       identity.ID,
-			RoleName: "assignee",
-			Account:  account,
-			Amount:   float64(contract.TotalAmount),
-		}); err != nil {
+		//Enroll the payment
+		if *contract.PaymentType == models.PaymentModeTypeFiat {
+			err = payment.Deposit()
+		} else {
+			err = payment.ConfirmDeposit(*form.TxID, form.Meta)
+		}
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
+		//Updating contract
+		contract.PaymentID = &payment.ID
+		contract.Status = models.ContractStatusSinged
+		err = contract.Update(ctx.(context.Context))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, contract)
 	})
 }
