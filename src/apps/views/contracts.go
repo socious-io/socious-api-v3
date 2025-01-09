@@ -20,10 +20,10 @@ func contractsGroup(router *gin.Engine) {
 	g.Use(auth.LoginRequired())
 
 	g.GET("", paginate(), func(c *gin.Context) {
-		u, _ := c.Get("user")
+		identity, _ := c.Get("identity")
 		page, _ := c.Get("paginate")
 
-		contracts, total, err := models.GetContracts(u.(*models.User).ID, page.(database.Paginate))
+		contracts, total, err := models.GetContracts(identity.(*models.Identity).ID, page.(database.Paginate))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -47,7 +47,7 @@ func contractsGroup(router *gin.Engine) {
 
 	g.POST("", func(c *gin.Context) {
 		ctx := c.MustGet("ctx").(context.Context)
-		u := c.MustGet("user").(*models.User)
+		identity := c.MustGet("identity").(*models.Identity)
 
 		form := new(ContractForm)
 		if err := c.ShouldBindJSON(form); err != nil {
@@ -57,7 +57,7 @@ func contractsGroup(router *gin.Engine) {
 
 		contract := new(models.Contract)
 		utils.Copy(form, contract)
-		contract.ProviderID = u.ID
+		contract.ProviderID = identity.ID
 
 		if err := contract.Create(ctx); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -68,7 +68,7 @@ func contractsGroup(router *gin.Engine) {
 
 	g.PATCH("/:id", func(c *gin.Context) {
 		ctx, _ := c.Get("ctx")
-		u, _ := c.Get("user")
+		identity, _ := c.Get("identity")
 		id := c.Param("id")
 
 		form := new(ContractForm)
@@ -82,7 +82,7 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		if contract.ProviderID != u.(*models.User).ID {
+		if contract.ProviderID != identity.(*models.Identity).ID {
 			c.JSON(http.StatusForbidden, gin.H{"error": "not allow"})
 			return
 		}
@@ -94,6 +94,73 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 		c.JSON(http.StatusAccepted, contract)
+	})
+
+	g.POST("/:id/operate/:status", func(c *gin.Context) {
+		ctx, _ := c.Get("ctx")
+		identity, _ := c.Get("identity")
+
+		id := c.Param("id")
+		status := c.Param("status")
+
+		contract, err := models.GetContract(uuid.MustParse(id))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		identityId := identity.(*models.Identity).ID
+		fmt.Println(identityId, contract.ProviderID, contract.ClientID)
+		switch status {
+		case "cancel":
+			if contract.ProviderID == identityId {
+				contract.Status = models.ContractStatusProviderCanceled
+			} else if contract.ClientID == identityId {
+				contract.Status = models.ContractStatusClientCanceled
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Provider or Client don't match identity"})
+				return
+			}
+		case "sign":
+			if contract.ClientID != identityId {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Just client can sign the contract"})
+				return
+			}
+			contract.Status = models.ContractStatusSinged
+		case "apply":
+			if contract.ClientID != identityId {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Just client can set the contract to applied"})
+				return
+			}
+			contract.Status = models.ContractStatusApplied
+		case "complete":
+			if contract.ProviderID != identityId {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Just provider can complete the contract"})
+				return
+			}
+			contract.Status = models.ContractStatusCompleted
+		}
+
+		if err := contract.Update(ctx.(context.Context)); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusAccepted, contract)
+	})
+
+	g.DELETE("/:id", func(c *gin.Context) {
+		ctx, _ := c.Get("ctx")
+		id := c.Param("id")
+
+		contract := models.Contract{
+			ID: uuid.MustParse(id),
+		}
+		err := contract.Delete(ctx.(context.Context))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"message": "success"})
 	})
 
 	g.POST("/:id/deposit", func(c *gin.Context) {
@@ -115,9 +182,9 @@ func contractsGroup(router *gin.Engine) {
 		}
 
 		//Fetching Client
-		client, err := models.GetUser(contract.ClientID)
+		provider, err := models.GetIdentity(contract.ProviderID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("client fetch error : %v", err)})
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("provider fetch error : %v", err)})
 			return
 		}
 
@@ -148,31 +215,34 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		var source_account, destination_account *string
+		var sourceAccount, destinationAccount *string
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
 			//Set Source account
-			customerCard, err := models.GetCard(*form.CardID, contract.ProviderID)
+			card, err := models.GetCard(*form.CardID, contract.ProviderID)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe customer"})
 				return
 			}
-			source_account = customerCard.Customer
+			sourceAccount = card.Customer
 
 			//Set Destination account
+			fmt.Println(*form.CardID, contract.ProviderID)
 			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, models.OauthConnectedProvidersStripeJp)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
 				return
 			}
-			destination_account = &oauthConnect.MatrixUniqueId
+			destinationAccount = &oauthConnect.MatrixUniqueId
 
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {
-			source_account = client.WalletAddress
-			if source_account == nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on client"})
+			walletAddress, ok := provider.MetaMap["wallet_address"].(string)
+			if !ok {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on provider"})
 				return
 			}
+			fmt.Println(walletAddress)
+			sourceAccount = &walletAddress
 			payment.SetToCryptoMode(*contract.CryptoCurrency, float64(contract.CurrencyRate))
 		}
 
@@ -180,7 +250,7 @@ func contractsGroup(router *gin.Engine) {
 		if _, err := payment.AddIdentity(gopay.IdentityParams{
 			ID:       identity.ID,
 			RoleName: "assigner",
-			Account:  *source_account,
+			Account:  *sourceAccount,
 			Amount:   0,
 		}); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -192,7 +262,7 @@ func contractsGroup(router *gin.Engine) {
 			if _, err := payment.AddIdentity(gopay.IdentityParams{
 				ID:       identity.ID,
 				RoleName: "assignee",
-				Account:  *destination_account,
+				Account:  *destinationAccount,
 				Amount:   float64(contract.TotalAmount),
 			}); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -213,7 +283,6 @@ func contractsGroup(router *gin.Engine) {
 
 		//Updating contract
 		contract.PaymentID = &payment.ID
-		contract.Status = models.ContractStatusSinged
 		err = contract.Update(ctx.(context.Context))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

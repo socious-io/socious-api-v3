@@ -150,3 +150,12 @@ func GetContracts(identityId uuid.UUID, p database.Paginate) ([]Contract, int, e
 	}
 	return contracts, fetchList[0].TotalCount, nil
 }
+
+func (c *Contract) Delete(ctx context.Context) error {
+	rows, err := database.Query(ctx, "contracts/delete", c.ID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	return nil
+}

@@ -254,12 +254,16 @@ func GetProjects(identityId uuid.UUID, p database.Paginate) ([]Project, int, err
 
 	if len(p.Filters) > 0 {
 		var kind string
+		optionalIdentityId := identityId
 		for _, filter := range p.Filters {
 			if filter.Key == "kind" {
 				kind = filter.Value
 			}
+			if filter.Key == "identity_id" {
+				optionalIdentityId = uuid.MustParse(filter.Value)
+			}
 		}
-		if err := database.QuerySelect("projects/get_by_kind", &fetchList, identityId, p.Limit, p.Offet, kind); err != nil {
+		if err := database.QuerySelect("projects/get_by_kind", &fetchList, optionalIdentityId, p.Limit, p.Offet, kind); err != nil {
 			return nil, 0, err
 		}
 
