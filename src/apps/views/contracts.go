@@ -58,7 +58,7 @@ func contractsGroup(router *gin.Engine) {
 		contract := new(models.Contract)
 		utils.Copy(form, contract)
 		contract.ProviderID = identity.ID
-
+		contract.ClientID = form.ClientID
 		if err := contract.Create(ctx); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
