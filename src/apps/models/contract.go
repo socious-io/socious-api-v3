@@ -26,14 +26,17 @@ type Contract struct {
 	CommitmentPeriodCount int                      `db:"commitment_period_count" json:"commitment_period_count"`
 	PaymentType           *PaymentModeType         `db:"payment_type" json:"payment_type"`
 
-	ProviderID uuid.UUID `db:"provider_id" json:"provider_id"`
-	ClientID   uuid.UUID `db:"client_id" json:"client_id"`
+	ProviderID uuid.UUID `db:"provider_id" json:"-"`
+	ClientID   uuid.UUID `db:"client_id" json:"-"`
+
+	Provider *Identity `db:"-" json:"provider"`
+	Client   *Identity `db:"-" json:"client"`
 
 	ApplicantID *uuid.UUID `db:"applicant_id" json:"applicant_id"`
 	ProjectID   *uuid.UUID `db:"project_id" json:"project_id"`
 	PaymentID   *uuid.UUID `db:"payment_id" json:"payment_id"`
-	OfferID     *uuid.UUID `db:"offer_id" json:"-"`
-	MissionID   *uuid.UUID `db:"mission_id" json:"-"`
+	OfferID     *uuid.UUID `db:"offer_id" json:"offer_id"`
+	MissionID   *uuid.UUID `db:"mission_id" json:"mission_id"`
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
