@@ -22,3 +22,4 @@ FROM projects p
 JOIN identities i ON i.id=p.identity_id
 LEFT JOIN job_categories jc ON jc.id=p.job_category_id
 WHERE p.id IN (?)
+ORDER BY p.created_at DESC

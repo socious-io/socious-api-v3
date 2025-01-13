@@ -17,10 +17,10 @@ func projectsGroup(router *gin.Engine) {
 	g.Use(auth.LoginRequired())
 
 	g.GET("", paginate(), func(c *gin.Context) {
-		u, _ := c.Get("user")
+		identity, _ := c.Get("identity")
 		page, _ := c.Get("paginate")
 
-		projects, total, err := models.GetProjects(u.(*models.User).ID, page.(database.Paginate))
+		projects, total, err := models.GetProjects(identity.(*models.Identity).ID, page.(database.Paginate))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -44,7 +44,7 @@ func projectsGroup(router *gin.Engine) {
 
 	g.POST("", func(c *gin.Context) {
 		ctx, _ := c.Get("ctx")
-		u, _ := c.Get("user")
+		identity, _ := c.Get("identity")
 
 		form := new(ProjectForm)
 		if err := c.ShouldBindJSON(form); err != nil {
@@ -54,7 +54,7 @@ func projectsGroup(router *gin.Engine) {
 
 		p := new(models.Project)
 		utils.Copy(form, p)
-		p.IdentityID = u.(*models.User).ID
+		p.IdentityID = identity.(*models.Identity).ID
 		if err := p.Create(ctx.(context.Context), form.WorkSamples); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
