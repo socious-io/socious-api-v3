@@ -232,6 +232,7 @@ const (
 	ContractStatusSinged           ContractStatus = "SIGNED"
 	ContractStatusProviderCanceled ContractStatus = "PROVIDER_CANCELED"
 	ContractStatusClientCanceled   ContractStatus = "CLIENT_CANCELED"
+	ContractStatusApplied          ContractStatus = "APPLIED"
 	ContractStatusCompleted        ContractStatus = "COMPLETED"
 )
 
