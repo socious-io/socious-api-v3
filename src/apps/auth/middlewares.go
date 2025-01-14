@@ -3,7 +3,6 @@ package auth
 import (
 	"net/http"
 	"socious/src/apps/models"
-	"socious/src/apps/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -50,7 +49,7 @@ func LoginRequired() gin.HandlerFunc {
 		//Safeguarding Identity if it was empty
 		var identity *models.Identity
 		identityStr := c.GetHeader(http.CanonicalHeaderKey("current-identity"))
-		identityUUID, err := utils.SafeUUIDParse(identityStr)
+		identityUUID, err := uuid.Parse(identityStr)
 		if err == nil {
 			identity, err = models.GetIdentity(identityUUID)
 		} else {

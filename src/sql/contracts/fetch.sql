@@ -28,3 +28,4 @@ LEFT JOIN projects p ON p.id = c.project_id
 LEFT JOIN applicants a ON a.id = c.applicant_id
 LEFT JOIN payments pay ON pay.id = c.payment_id
 WHERE c.id IN (?)
+ORDER BY c.created_at DESC
