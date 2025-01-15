@@ -9,17 +9,6 @@ import (
 	database "github.com/socious-io/pkg_database"
 )
 
-type RequirementFiles struct {
-	Id       string `db:"id" json:"id"`
-	Url      string `db:"url" json:"url"`
-	Filename string `db:"filename" json:"filename"`
-}
-
-type RequirementFileType struct {
-	ContractID uuid.UUID `db:"contract_id" json:"contract_id"`
-	Document   uuid.UUID `db:"document" json:"document"`
-}
-
 type Contract struct {
 	ID          uuid.UUID `db:"id" json:"id"`
 	Name        string    `db:"name" json:"name"`
@@ -37,8 +26,7 @@ type Contract struct {
 	CommitmentPeriodCount int                      `db:"commitment_period_count" json:"commitment_period_count"`
 	PaymentType           *PaymentModeType         `db:"payment_type" json:"payment_type"`
 
-	RequirementDescription *string            `db:"requirement_description" json:"requirement_description"`
-	RequirementFiles       []RequirementFiles `db:"-" json:"requirement_files"`
+	RequirementDescription *string `db:"requirement_description" json:"requirement_description"`
 
 	ProviderID uuid.UUID `db:"provider_id" json:"-"`
 	ClientID   uuid.UUID `db:"client_id" json:"-"`
@@ -60,7 +48,7 @@ type Contract struct {
 	ClientJson           types.JSONText `db:"client" json:"-"`
 	ProjectJson          types.JSONText `db:"project" json:"-"`
 	ApplicantJson        types.JSONText `db:"applicant" json:"-"`
-	RequirementFilesJson types.JSONText `db:"requirement_files" json:"-"`
+	RequirementFilesJson types.JSONText `db:"requirement_files" json:"requirement_files"`
 }
 
 func (Contract) TableName() string {
@@ -146,28 +134,30 @@ func (c *Contract) Update(ctx context.Context, requirementFiles []uuid.UUID) err
 	rows.Close()
 
 	//delete and recreate files
-	rows, err = database.TxQuery(ctx, tx, "contracts/delete_requirement_files",
-		c.ID,
-	)
-	if err != nil {
-		tx.Rollback()
-
-		return err
-	}
-	rows.Close()
-
-	requirementFilesData := []RequirementFileType{}
-	for _, requirementFile := range requirementFiles {
-		requirementFilesData = append(requirementFilesData, RequirementFileType{ContractID: c.ID, Document: requirementFile})
-	}
-
-	if len(requirementFilesData) > 0 {
-		if _, err = database.TxExecuteQuery(tx, "contracts/create_requirement_file", requirementFilesData); err != nil {
+	if requirementFiles != nil {
+		rows, err = database.TxQuery(ctx, tx, "contracts/delete_requirement_files",
+			c.ID,
+		)
+		if err != nil {
 			tx.Rollback()
+
 			return err
 		}
+		rows.Close()
+
+		requirementFilesData := []map[string]any{}
+		for _, requirementFile := range requirementFiles {
+			requirementFilesData = append(requirementFilesData, map[string]any{"contract_id": c.ID, "document": requirementFile})
+		}
+
+		if len(requirementFilesData) > 0 {
+			if _, err = database.TxExecuteQuery(tx, "contracts/create_requirement_file", requirementFilesData); err != nil {
+				tx.Rollback()
+				return err
+			}
+		}
+		rows.Close()
 	}
-	rows.Close()
 
 	tx.Commit()
 
