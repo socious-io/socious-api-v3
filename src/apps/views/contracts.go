@@ -90,7 +90,7 @@ func contractsGroup(router *gin.Engine) {
 
 		utils.Copy(form, contract)
 
-		if err := contract.Update(ctx.(context.Context)); err != nil {
+		if err := contract.Update(ctx.(context.Context), nil); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -115,7 +115,7 @@ func contractsGroup(router *gin.Engine) {
 		}
 		contract.Status = models.ContractStatusSinged
 
-		if err := contract.Update(ctx.(context.Context)); err != nil {
+		if err := contract.Update(ctx.(context.Context), nil); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -143,7 +143,7 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		if err := contract.Update(ctx.(context.Context)); err != nil {
+		if err := contract.Update(ctx.(context.Context), nil); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -168,7 +168,7 @@ func contractsGroup(router *gin.Engine) {
 		}
 		contract.Status = models.ContractStatusApplied
 
-		if err := contract.Update(ctx.(context.Context)); err != nil {
+		if err := contract.Update(ctx.(context.Context), nil); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -193,7 +193,7 @@ func contractsGroup(router *gin.Engine) {
 		}
 		contract.Status = models.ContractStatusCompleted
 
-		if err := contract.Update(ctx.(context.Context)); err != nil {
+		if err := contract.Update(ctx.(context.Context), nil); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
@@ -334,7 +334,7 @@ func contractsGroup(router *gin.Engine) {
 
 		//Updating contract
 		contract.PaymentID = &payment.ID
-		err = contract.Update(ctx.(context.Context))
+		err = contract.Update(ctx.(context.Context), nil)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -342,4 +342,31 @@ func contractsGroup(router *gin.Engine) {
 
 		c.JSON(http.StatusOK, contract)
 	})
+
+	g.PATCH("/:id/requirements", func(c *gin.Context) {
+		ctx, _ := c.Get("ctx")
+		id := c.Param("id")
+
+		form := new(ContractRequirementsForm)
+		if err := c.BindJSON(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		contract, err := models.GetContract(uuid.MustParse(id))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		contract.RequirementDescription = &form.RequirementDescription
+		if err := contract.Update(ctx.(context.Context), form.RequirementFiles); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusAccepted, contract)
+
+	})
+
 }
