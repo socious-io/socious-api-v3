@@ -34,6 +34,8 @@ type Contract struct {
 	Provider *Identity `db:"-" json:"provider"`
 	Client   *Identity `db:"-" json:"client"`
 
+	Amounts map[string]any `db:"-" json:"amounts"`
+
 	ApplicantID *uuid.UUID `db:"applicant_id" json:"applicant_id"`
 	ProjectID   *uuid.UUID `db:"project_id" json:"project_id"`
 	PaymentID   *uuid.UUID `db:"payment_id" json:"payment_id"`

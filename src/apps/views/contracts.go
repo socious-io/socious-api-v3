@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"socious/src/apps/auth"
+	"socious/src/apps/lib"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
 
@@ -37,12 +38,14 @@ func contractsGroup(router *gin.Engine) {
 	g.GET("/:id", func(c *gin.Context) {
 		id := c.Param("id")
 
-		s, err := models.GetContract(uuid.MustParse(id))
+		contract, err := models.GetContract(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusOK, s)
+		contract.Amounts = lib.CalculateAmounts(lib.AmountsOptionsFromContract(*contract))
+
+		c.JSON(http.StatusOK, contract)
 	})
 
 	g.POST("", func(c *gin.Context) {
@@ -63,6 +66,8 @@ func contractsGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		contract.Amounts = lib.CalculateAmounts(lib.AmountsOptionsFromContract(*contract))
+
 		c.JSON(http.StatusCreated, contract)
 	})
 
