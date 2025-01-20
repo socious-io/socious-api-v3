@@ -55,6 +55,7 @@ var (
 			"total_amount":      2000,
 			"currency":          "USD",
 			"type":              "PAID",
+			"payment_type":      "CRYPTO",
 			"commitment_period": "MONTHLY",
 		},
 	}
