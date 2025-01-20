@@ -35,7 +35,7 @@ type ProjectForm struct {
 }
 
 type ContractForm struct {
-	Name                  string                          `json:"string" validate:"required,min=3"`
+	Name                  string                          `json:"name" validate:"required,min=3"`
 	Description           string                          `json:"description"`
 	Type                  models.ContractType             `json:"type" validate:"required"`
 	TotalAmount           float64                         `json:"total_amount"`
