@@ -276,7 +276,7 @@ func contractsGroup(router *gin.Engine) {
 		var sourceAccount, destinationAccount *string
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
 			//Set Source account
-			card, err := models.GetCard(*form.CardID, contract.ProviderID)
+			card, err := models.GetCard(*form.CardID, provider.ID)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe customer"})
 				return
@@ -294,7 +294,14 @@ func contractsGroup(router *gin.Engine) {
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {
 			walletAddress, ok := provider.MetaMap["wallet_address"].(string)
-			if !ok {
+			if provider.Type == models.IdentityTypeOrganizations {
+				providerAsUser, err := models.GetUserByOrg(provider.ID)
+				if err != nil || providerAsUser.WalletAddress == nil {
+					c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't get the root user for wallet address"})
+					return
+				}
+				walletAddress = *providerAsUser.WalletAddress
+			} else if !ok {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on provider"})
 				return
 			}
