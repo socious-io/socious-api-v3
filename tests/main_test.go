@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
@@ -122,6 +123,17 @@ func setupTestEnvironment() (*sqlx.DB, *gin.Engine) {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal(err)
 	}
+
+	//Setting up gopay package
+	if err := gopay.Setup(gopay.Config{
+		DB:     database.GetDB(),
+		Prefix: "gopay",
+		Chains: config.Config.Payment.Chains,
+		Fiats:  config.Config.Payment.Fiats,
+	}); err != nil {
+		log.Fatalf("gopay error %v", err)
+	}
+
 	log.Println("Migrations applied successfully!")
 	router := apps.Init()
 
