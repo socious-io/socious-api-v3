@@ -11,6 +11,7 @@ UPDATE contracts SET
   payment_type=$11,
   status=COALESCE($12, status),
   payment_id=COALESCE($13, payment_id),
-  requirement_description=$14
+  requirement_description=$14,
+  updated_at=NOW()
 WHERE id=$1
 RETURNING *
