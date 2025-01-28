@@ -378,7 +378,42 @@ func contractsGroup(router *gin.Engine) {
 		}
 
 		c.JSON(http.StatusAccepted, contract)
+	})
 
+	g.POST("/:id/feedback", func(c *gin.Context) {
+		ctx, _ := c.Get("ctx")
+		id := c.Param("id")
+		identity := c.MustGet("identity").(*models.Identity)
+
+		form := new(ContractFeedbackForm)
+		if err := c.BindJSON(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		contract, err := models.GetContract(uuid.MustParse(id))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		isContest := false
+		feedback := models.Feedback{
+			Content:    &form.Content,
+			IsContest:  &isContest,
+			IdentityID: identity.ID,
+			ProjectID:  *contract.ProjectID,
+			MissionID:  nil,
+			ContractID: &contract.ID,
+		}
+		err = feedback.Create(ctx.(context.Context))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		database.Fetch(contract, contract.ID)
+
+		c.JSON(http.StatusAccepted, contract)
 	})
 
 }

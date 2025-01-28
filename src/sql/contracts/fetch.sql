@@ -4,6 +4,8 @@ SELECT c.*,
   row_to_json(a.*) as applicant,
   row_to_json(p.*) as project,
   row_to_json(pay.*) as payment,
+  EXISTS(SELECT f.id FROM feedbacks f WHERE f.contract_id=c.id AND f.identity_id=c.provider_id) AS provider_feedback,
+  EXISTS(SELECT f.id FROM feedbacks f WHERE f.contract_id=c.id AND f.identity_id=c.client_id) AS client_feedback,
   (
     COALESCE(
       (SELECT
