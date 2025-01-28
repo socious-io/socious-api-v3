@@ -61,3 +61,7 @@ type ContractRequirementsForm struct {
 	RequirementDescription string      `json:"requirement_description" validate:"required"`
 	RequirementFiles       []uuid.UUID `json:"requirement_files" validate:"required"`
 }
+
+type ContractFeedbackForm struct {
+	Content string `json:"content" validate:"required"`
+}

@@ -27,15 +27,13 @@ type AmountsOptions struct {
 
 func AmountsOptionsFromContract(contract models.Contract) AmountsOptions {
 	round := 1.0
-	if *contract.Currency != models.JPY {
+	service := models.PaymentServiceStripe
+
+	if contract.Currency != nil && *contract.Currency != models.JPY {
 		round = 100.0
 	}
 	if *contract.PaymentType == models.PaymentModeTypeCrypto {
 		round = 100000.0
-	}
-
-	service := models.PaymentServiceStripe
-	if models.PaymentModeType(*contract.PaymentType) == models.PaymentModeTypeCrypto {
 		service = models.PaymentServiceCrypto
 	}
 
