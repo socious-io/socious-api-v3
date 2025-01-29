@@ -2,10 +2,12 @@ package models
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/lib/pq"
 	database "github.com/socious-io/pkg_database"
 )
 
@@ -184,7 +186,16 @@ func GetContracts(identityId uuid.UUID, p database.Paginate) ([]Contract, int, e
 		ids       []interface{}
 	)
 
-	if err := database.QuerySelect("contracts/get", &fetchList, identityId, p.Limit, p.Offet); err != nil {
+	status := []string{}
+	if len(p.Filters) > 0 {
+		for _, filter := range p.Filters {
+			if filter.Key == "status" {
+				status = strings.Split(filter.Value, ",")
+			}
+		}
+	}
+
+	if err := database.QuerySelect("contracts/get", &fetchList, identityId, p.Limit, p.Offet, pq.Array(status)); err != nil {
 		return nil, 0, err
 	}
 
