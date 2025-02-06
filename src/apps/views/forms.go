@@ -35,7 +35,7 @@ type ProjectForm struct {
 }
 
 type ContractForm struct {
-	Title                 string                          `json:"title" validate:"required,min=3"`
+	Name                  string                          `json:"name" validate:"required,min=3"`
 	Description           string                          `json:"description"`
 	Type                  models.ContractType             `json:"type" validate:"required"`
 	TotalAmount           float64                         `json:"total_amount"`
@@ -55,4 +55,13 @@ type ContractDepositForm struct {
 	CardID *uuid.UUID   `json:"card_id" validate:"required"`
 	TxID   *string      `json:"txid" validate:"required"`
 	Meta   *interface{} `json:"meta" validate:"required"`
+}
+
+type ContractRequirementsForm struct {
+	RequirementDescription string      `json:"requirement_description" validate:"required"`
+	RequirementFiles       []uuid.UUID `json:"requirement_files" validate:"required"`
+}
+
+type ContractFeedbackForm struct {
+	Content string `json:"content" validate:"required"`
 }
