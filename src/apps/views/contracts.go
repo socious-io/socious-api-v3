@@ -258,6 +258,12 @@ func contractsGroup(router *gin.Engine) {
 			currency = gopay.Currency(*contract.Currency)
 		}
 
+		//TODO: Can't be more than 1000 Characters (Stripe limitation)
+		if contract.Description != nil && len(*contract.Description) > 1000 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Contract description cant be more than 1000 characters"})
+			return
+		}
+
 		//Start a payment session
 		payment, err := gopay.New(gopay.PaymentParams{
 			Tag:         contract.Name,
@@ -337,16 +343,16 @@ func contractsGroup(router *gin.Engine) {
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
 			err = payment.Deposit()
 		} else {
-			err = payment.ConfirmDeposit(*form.TxID, form.Meta)
-		}
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+			TxID := ""
+			if form.TxID != nil {
+				TxID = *form.TxID
+			}
+			err = payment.ConfirmDeposit(TxID, form.Meta)
 		}
 
 		//Updating contract
 		contract.PaymentID = &payment.ID
-		err = contract.Update(ctx.(context.Context), nil)
+		contract.Update(ctx.(context.Context), nil)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -397,6 +403,8 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
+		//TODO: Handle both satisfactory & unsatisfactory with this API
+		//TODO: Calculate Impact points
 		isContest := false
 		feedback := models.Feedback{
 			Content:    &form.Content,
