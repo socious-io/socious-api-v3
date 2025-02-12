@@ -397,10 +397,12 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
+		//TODO: Calculate Impact points
 		isContest := false
 		feedback := models.Feedback{
 			Content:    &form.Content,
 			IsContest:  &isContest,
+			Satisfied:  &form.Satisfied,
 			IdentityID: identity.ID,
 			ProjectID:  *contract.ProjectID,
 			MissionID:  nil,

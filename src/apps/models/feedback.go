@@ -12,6 +12,7 @@ type Feedback struct {
 	ID         uuid.UUID  `db:"id" json:"id"`
 	Content    *string    `db:"content" json:"content"`
 	IsContest  *bool      `db:"is_contest" json:"is_contest"`
+	Satisfied  *bool      `db:"satisfied" json:"satisfied"`
 	IdentityID uuid.UUID  `db:"identity_id" json:"identity_id"`
 	ProjectID  uuid.UUID  `db:"project_id" json:"project_id"`
 	MissionID  *uuid.UUID `db:"mission_id" json:"mission_id"`
@@ -34,6 +35,7 @@ func (c *Feedback) Create(ctx context.Context) error {
 		"feedbacks/create",
 		c.Content,
 		c.IsContest,
+		c.Satisfied,
 		c.IdentityID,
 		c.ProjectID,
 		c.MissionID,
