@@ -26,7 +26,17 @@ func Init() *gin.Engine {
 
 	//Cors
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     config.Config.Cors.Origins,
+		AllowOriginFunc: func(origin string) bool {
+			if config.Config.Debug {
+				return true
+			}
+			for _, o := range config.Config.Cors.Origins {
+				if o == origin {
+					return true
+				}
+			}
+			return false
+		},
 		AllowMethods:     []string{"*"},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
