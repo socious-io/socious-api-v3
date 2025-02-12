@@ -409,6 +409,7 @@ func contractsGroup(router *gin.Engine) {
 		feedback := models.Feedback{
 			Content:    &form.Content,
 			IsContest:  &isContest,
+			Satisfied:  &form.Satisfied,
 			IdentityID: identity.ID,
 			ProjectID:  *contract.ProjectID,
 			MissionID:  nil,

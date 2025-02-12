@@ -307,6 +307,12 @@ components:
         provider_id:
           type: string
           example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
+        provider_feedback:
+          type: boolean
+          example: true
+        client_feedback:
+          type: boolean
+          example: false
         payment_id:
           type: string
           example: 3a7a85d4-e4f0-4b98-9922-5e5aa9456a6b
@@ -714,6 +720,39 @@ paths:
                 txid:
                   type: string
                   example: The transaction hash (crypto)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contracts'
+  /contracts/:id/feedback:
+    parameters:
+        - name: id
+          required: true
+          in: path
+          description: Contract ID
+          schema:
+            type: string
+    post:
+      summary: Put feedback on contract
+      security:
+        - bearerAuth: []
+      description: Put feedback on contract
+      tags:
+        - Contracts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                content:
+                  type: string
+                  example: Content of the feedback
+                satisfied:
+                  type: boolean
+                  example: Is satisfied
       responses:
         '200':
           description: Successful response
