@@ -1,8 +1,6 @@
 package models
 
 import (
-	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,8 +11,8 @@ import (
 type Identity struct {
 	ID        uuid.UUID              `db:"id" json:"id"`
 	Type      IdentityType           `db:"type" json:"type"`
-	MetaMap   map[string]interface{} `db:"-" json:"-"`
-	Meta      types.JSONText         `db:"meta" json:"meta"`
+	MetaMap   map[string]interface{} `db:"-" json:"meta"`
+	Meta      types.JSONText         `db:"meta" json:"-"`
 	CreatedAt time.Time              `db:"created_at" json:"created_at"`
 }
 
@@ -29,10 +27,6 @@ func (Identity) FetchQuery() string {
 func GetIdentity(id uuid.UUID) (*Identity, error) {
 	i := new(Identity)
 	if err := database.Fetch(i, id); err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(i.Meta, &i.MetaMap); err != nil {
-		fmt.Println("Error unmarshaling Meta:", err)
 		return nil, err
 	}
 	return i, nil
