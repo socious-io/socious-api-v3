@@ -63,5 +63,6 @@ type ContractRequirementsForm struct {
 }
 
 type ContractFeedbackForm struct {
-	Content string `json:"content" validate:"required"`
+	Content   string `json:"content" validate:"required"`
+	Satisfied bool   `json:"satisfied" validate:"required"`
 }
