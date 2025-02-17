@@ -28,6 +28,6 @@ JOIN identities id1 ON id1.id = c.provider_id
 JOIN identities id2 ON id2.id = c.client_id
 LEFT JOIN projects p ON p.id = c.project_id
 LEFT JOIN applicants a ON a.id = c.applicant_id
-LEFT JOIN payments pay ON pay.id = c.payment_id
+LEFT JOIN gopay_payments pay ON pay.id = c.payment_id
 WHERE c.id IN (?)
 ORDER BY c.created_at DESC

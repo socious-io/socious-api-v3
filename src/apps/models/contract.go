@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx/types"
 	"github.com/lib/pq"
+	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 )
 
@@ -27,6 +28,7 @@ type Contract struct {
 	CommitmentPeriod      ContractCommitmentPeriod `db:"commitment_period" json:"commitment_period"`
 	CommitmentPeriodCount int                      `db:"commitment_period_count" json:"commitment_period_count"`
 	PaymentType           *PaymentModeType         `db:"payment_type" json:"payment_type"`
+	Payment               *gopay.Payment           `db:"-" json:"payment"`
 
 	RequirementDescription *string `db:"requirement_description" json:"requirement_description"`
 
