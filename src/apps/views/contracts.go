@@ -221,6 +221,7 @@ func contractsGroup(router *gin.Engine) {
 	})
 
 	g.POST("/:id/deposit", func(c *gin.Context) {
+		user := c.MustGet("user").(*models.User)
 		identity := c.MustGet("identity").(*models.Identity)
 		ctx, _ := c.Get("ctx")
 
@@ -293,19 +294,11 @@ func contractsGroup(router *gin.Engine) {
 
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {
-			walletAddress, ok := provider.MetaMap["wallet_address"].(string)
-			if provider.Type == models.IdentityTypeOrganizations {
-				providerAsUser, err := models.GetUserByOrg(provider.ID)
-				if err != nil || providerAsUser.WalletAddress == nil {
-					c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't get the root user for wallet address"})
-					return
-				}
-				walletAddress = *providerAsUser.WalletAddress
-			} else if !ok {
+			if user.WalletAddress == nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on provider"})
 				return
 			}
-			sourceAccount = &walletAddress
+			sourceAccount = user.WalletAddress
 			payment.SetToCryptoMode(*contract.CryptoCurrency, float64(contract.CurrencyRate))
 		}
 
