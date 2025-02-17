@@ -25,7 +25,7 @@ type AmountsOptions struct {
 	UserFeeDiscount    bool
 }
 
-func AmountsOptionsFromContract(contract models.Contract) AmountsOptions {
+func AmountsOptionsFromContract(contract models.Contract, orgReferrer *models.Referring, userReferrer *models.Referring) AmountsOptions {
 	round := 1.0
 	service := models.PaymentServiceStripe
 
@@ -44,20 +44,31 @@ func AmountsOptionsFromContract(contract models.Contract) AmountsOptions {
 		isVerified = false
 	}
 
+	//Referrerings
+	var orgReferrerWallet, userReferrerWallet *string = nil, nil
+	orgReferrerFeeDiscount, userReferrerFeeDiscount := false, false
+	if orgReferrer != nil {
+		orgReferrerWallet = orgReferrer.WalletAddress
+		orgReferrerFeeDiscount = orgReferrer.FeeDiscount
+	}
+	if userReferrer != nil {
+		userReferrerWallet = userReferrer.WalletAddress
+		userReferrerFeeDiscount = userReferrer.FeeDiscount
+	}
+
 	return AmountsOptions{
 		Amount:             contract.TotalAmount,
 		Round:              &round,
 		IsVerified:         isVerified.(bool),
-		OrgReferredWallet:  nil,
-		UserReferredWallet: nil,
-		OrgFeeDiscount:     false,
-		UserFeeDiscount:    false,
+		OrgReferredWallet:  orgReferrerWallet,
+		UserReferredWallet: userReferrerWallet,
+		OrgFeeDiscount:     orgReferrerFeeDiscount,
+		UserFeeDiscount:    userReferrerFeeDiscount,
 		Service:            service,
 	}
 }
 
 func CalculateAmounts(options AmountsOptions) map[string]any {
-
 	orgFeeRate, userFeeRate := ORG_FEE, USER_FEE
 	if options.IsVerified {
 		orgFeeRate, userFeeRate = IMPACT_ORG_FEE, IMPACT_USER_FEE
@@ -89,12 +100,25 @@ func CalculateAmounts(options AmountsOptions) map[string]any {
 	payoutFee := amount * userFeeRate
 	payout := amount - payoutFee
 
+	//Referrings
+	orgReferredWallet, userReferredWallet := "", ""
+	if options.OrgReferredWallet != nil {
+		orgReferredWallet = *options.OrgReferredWallet
+	}
+	if options.UserReferredWallet != nil {
+		userReferredWallet = *options.UserReferredWallet
+	}
+
 	return map[string]any{
-		"amount":     amount,
-		"fee":        fee,
-		"stripe_fee": stripeFee,
-		"total":      total,
-		"payout":     payout,
-		"app_fee":    fee + payoutFee,
+		"amount":               amount,
+		"fee":                  fee,
+		"stripe_fee":           stripeFee,
+		"total":                total,
+		"payout":               payout,
+		"app_fee":              fee + payoutFee,
+		"org_referrer_wallet":  orgReferredWallet,
+		"user_referrer_wallet": userReferredWallet,
+		"org_fee_discount":     options.OrgFeeDiscount,
+		"user_fee_discount":    options.UserFeeDiscount,
 	}
 }
