@@ -171,6 +171,8 @@ github.com/socious-io/gopay v0.0.14 h1:bV1usMn6gbnxRmS/Z2Js3FtnwCgBLZgJ1P5/v8nR5
 github.com/socious-io/gopay v0.0.14/go.mod h1:aG4FFONDbP7AepJ5arN6ga72Kk/CFc9PIpbJGaJYHMw=
 github.com/socious-io/gopay v0.0.15 h1:qAH06w5aQOzGmXoyf50NqhgvkylWN5A6/loS/x5xw30=
 github.com/socious-io/gopay v0.0.15/go.mod h1:A4F/tFIm/NO95kGwOXFN+DNnBtlBAx+6MrMbDv+u4po=
+github.com/socious-io/gopay v0.0.16 h1:RH1U7/iCFJni9O2gd82/zJbKOObzS04zfQTbmm98KF4=
+github.com/socious-io/gopay v0.0.16/go.mod h1:A4F/tFIm/NO95kGwOXFN+DNnBtlBAx+6MrMbDv+u4po=
 github.com/socious-io/pkg_database v1.0.0 h1:y7VNH6IDE49qGBgiseCsMA0h3FRWvmR5jpwtMryl5ow=
 github.com/socious-io/pkg_database v1.0.0/go.mod h1:6YOOJBPcPq2XTnexr4QByeRZpjQ+pckft0YHAvL0npU=
 github.com/sony/gobreaker v1.0.0 h1:feX5fGGXSl3dYd4aHZItw+FpHLvvoaqkawKjVNiFMNQ=
