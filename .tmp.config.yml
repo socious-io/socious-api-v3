@@ -3,7 +3,9 @@ port: 3000
 host: "http://localhost:3000"
 secret: this-is-secret
 sso:
-  secret: sec
+  host: host_url (without forwarding slash)
+  id: client_id
+  secret: client_secret
 debug: true
 database: 
   url: postgresql://socious:passwd@localhost:5432/socious?sslmode=disable

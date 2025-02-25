@@ -15,6 +15,8 @@ type ConfigType struct {
 	Debug  bool   `mapstructure:"debug"`
 	Secret string `mapstructure:"secret"`
 	SSO    struct {
+		Host   string `mapstructure:"host"`
+		ID     string `mapstructure:"id"`
 		Secret string `mapstructure:"secret"`
 	} `mapstructure:"sso"`
 	Host     string `mapstructure:"host"`

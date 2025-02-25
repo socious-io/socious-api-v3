@@ -7,4 +7,5 @@ func Init(r *gin.Engine) {
 	authGroup(r)
 	projectsGroup(r)
 	contractsGroup(r)
+	usersGroup(r)
 }
