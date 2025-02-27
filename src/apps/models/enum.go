@@ -341,8 +341,9 @@ func (us UserStatus) Value() (driver.Value, error) {
 type OauthConnectedProviders string
 
 const (
-	OauthConnectedProvidersStripe   OauthConnectedProviders = "STRIPE"
-	OauthConnectedProvidersStripeJp OauthConnectedProviders = "STRIPE_JP"
+	OauthConnectedProvidersStripe    OauthConnectedProviders = "STRIPE"
+	OauthConnectedProvidersStripeJp  OauthConnectedProviders = "STRIPE_JP"
+	OauthConnectedProvidersSociousId OauthConnectedProviders = "SOCIOUS_ID"
 )
 
 func (ocp *OauthConnectedProviders) Scan(value interface{}) error {

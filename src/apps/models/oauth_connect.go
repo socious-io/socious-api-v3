@@ -39,6 +39,42 @@ func GetOauthConnectByIdentityId(identityId uuid.UUID, provider OauthConnectedPr
 	return oc, nil
 }
 
+func GetOauthConnectByEmail(email string, provider OauthConnectedProviders) (*OauthConnect, error) {
+	oc := new(OauthConnect)
+	if err := database.Get(oc, "oauth_connects/get_by_email", email, provider); err != nil {
+		return nil, err
+	}
+	return oc, nil
+}
+
+func (oc *OauthConnect) Create(ctx context.Context) error {
+	rows, err := database.Query(ctx, "oauth_connects/create", oc.IdentityId, oc.Provider, oc.MatrixUniqueId, oc.AccessToken, oc.RefreshToken)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.StructScan(oc); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (oc *OauthConnect) Update(ctx context.Context) error {
+	rows, err := database.Query(ctx, "oauth_connects/update", oc.ID, oc.MatrixUniqueId, oc.AccessToken, oc.RefreshToken)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.StructScan(oc); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (oc *OauthConnect) UpdateStatus(ctx context.Context, Status UserStatus) error {
 	rows, err := database.Query(ctx, "oauth_connects/update_status", oc.ID, Status)
 	if err != nil {
