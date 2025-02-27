@@ -46,4 +46,40 @@ func usersGroup(router *gin.Engine) {
 
 	})
 
+	g.PUT("/hook", func(c *gin.Context) {
+		ctx, _ := c.Get("ctx")
+
+		form := new(models.User)
+		if err := c.ShouldBindJSON(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//Fetching Socious ID token
+		oauthConnect, err := models.GetOauthConnectByEmail(form.Email, models.OauthConnectedProvidersSociousId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//Get User's information from Socious ID
+		userSociousID := new(models.User)
+		err = sociousid.GetUserProfile(oauthConnect.AccessToken, &userSociousID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//Updating user on local
+		user := new(models.User)
+		utils.Copy(userSociousID, user)
+		err = user.UpdateProfile(ctx.(context.Context))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, user)
+	})
+
 }
