@@ -2,16 +2,13 @@ package views
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"socious/src/apps/auth"
-	"socious/src/apps/lib"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
-	"socious/src/config"
 
 	"github.com/gin-gonic/gin"
+	sociousid "github.com/socious-io/go-socious-id"
 )
 
 func authGroup(router *gin.Engine) {
@@ -48,34 +45,13 @@ func authGroup(router *gin.Engine) {
 	g.GET("/login", func(c *gin.Context) {
 		redirect_url := c.Query("redirect_url")
 
-		//Create auth session
-		response, err := lib.HTTPRequest(lib.HTTPRequestOptions{
-			Endpoint: fmt.Sprintf("%s/auth/session", config.Config.SSO.Host),
-			Method:   lib.HTTPRequestMethodPost,
-			Body: map[string]any{
-				"client_id":     config.Config.SSO.ID,
-				"client_secret": config.Config.SSO.Secret,
-				"redirect_url":  redirect_url, //NOTE: if needs redirection within backend fmt.Sprintf("%s/auth/login/callback", config.Config.Host),
-			},
-		})
+		_, entrypoint, err := sociousid.StartSession(redirect_url)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		authSession := new(auth.AuthSessionResponse)
-		if err := json.Unmarshal(response, &authSession); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.Redirect(http.StatusTemporaryRedirect,
-			fmt.Sprintf(
-				"%s/auth/session/%s?auth_mode=login",
-				config.Config.SSO.Host,
-				authSession.AuthSession.ID,
-			),
-		)
+		c.Redirect(http.StatusTemporaryRedirect, entrypoint)
 	})
 
 	g.POST("/token", func(c *gin.Context) {
@@ -89,41 +65,28 @@ func authGroup(router *gin.Engine) {
 		}
 
 		//Get the token from Socious ID
-		response, err := lib.HTTPRequest(lib.HTTPRequestOptions{
-			Endpoint: fmt.Sprintf("%s/auth/session/token", config.Config.SSO.Host),
-			Method:   lib.HTTPRequestMethodPost,
-			Body: map[string]any{
-				"client_id":     config.Config.SSO.ID,
-				"client_secret": config.Config.SSO.Secret,
-				"code":          code,
-			},
-		})
+		sessionToken, err := sociousid.GetSessionToken(code)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-		sessionToken := new(auth.SessionTokenResponse)
-		if err := json.Unmarshal(response, &sessionToken); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		//Get User's information from Socious ID
-		response, err = lib.HTTPRequest(lib.HTTPRequestOptions{
-			Endpoint: fmt.Sprintf("%s/users", config.Config.SSO.Host),
-			Method:   lib.HTTPRequestMethodGet,
-			Headers: map[string]string{
-				"Authorization": fmt.Sprintf("Bearer %s", sessionToken.AccessToken),
-			},
-		})
+		user := new(models.User)
+		err = sociousid.GetUserProfile(sessionToken.AccessToken, &user)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		user := new(models.User)
-		if err := json.Unmarshal(response, &user); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+
+		user, err = models.GetUserByEmail(user.Email)
+		if err != nil {
+			//Try to create user if doesn't exist
+			err = user.Create(ctx.(context.Context))
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+				return
+			}
 		}
 
 		//Create token for front end to communicate with this platform

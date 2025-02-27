@@ -1,15 +1,14 @@
 package views
 
 import (
-	"encoding/json"
-	"fmt"
+	"context"
 	"net/http"
 	"socious/src/apps/auth"
-	"socious/src/apps/lib"
 	"socious/src/apps/models"
-	"socious/src/config"
+	"socious/src/apps/utils"
 
 	"github.com/gin-gonic/gin"
+	sociousid "github.com/socious-io/go-socious-id"
 )
 
 func usersGroup(router *gin.Engine) {
@@ -18,6 +17,7 @@ func usersGroup(router *gin.Engine) {
 
 	g.GET("/", func(c *gin.Context) {
 		user := c.MustGet("user").(*models.User)
+		ctx, _ := c.Get("ctx")
 
 		//Fetching Socious ID token
 		oauthConnect, err := models.GetOauthConnectByIdentityId(user.ID, models.OauthConnectedProvidersSociousId)
@@ -27,23 +27,23 @@ func usersGroup(router *gin.Engine) {
 		}
 
 		//Get User's information from Socious ID
-		response, err := lib.HTTPRequest(lib.HTTPRequestOptions{
-			Endpoint: fmt.Sprintf("%s/users", config.Config.SSO.Host),
-			Method:   lib.HTTPRequestMethodGet,
-			Headers: map[string]string{
-				"Authorization": fmt.Sprintf("Bearer %s", oauthConnect.AccessToken),
-			},
-		})
+		userSociousID := new(models.User)
+		err = sociousid.GetUserProfile(oauthConnect.AccessToken, &userSociousID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		user = new(models.User)
-		if err := json.Unmarshal(response, &user); err != nil {
+		//Updating user on local
+		utils.Copy(userSociousID, user)
+		err = user.UpdateProfile(ctx.(context.Context))
+		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		c.JSON(http.StatusOK, user)
+
 	})
 
 }
