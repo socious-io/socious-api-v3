@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx/types"
+	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 )
 
@@ -87,4 +88,12 @@ func (oc *OauthConnect) UpdateStatus(ctx context.Context, Status UserStatus) err
 		}
 	}
 	return nil
+}
+
+func (oc *OauthConnect) SociousIdSession() goaccount.SessionToken {
+	return goaccount.SessionToken{
+		AccessToken:  oc.AccessToken,
+		RefreshToken: *oc.RefreshToken,
+		TokenType:    "Bearer",
+	}
 }

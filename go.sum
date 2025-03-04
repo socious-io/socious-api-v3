@@ -149,6 +149,10 @@ github.com/socious-io/go-socious-id v0.1.1 h1:b1DHy2NJuKgP4v5oOzK6HAmgk6Z+J7ES+V
 github.com/socious-io/go-socious-id v0.1.1/go.mod h1:tHIbFvO0MuOOvZtkchefSlzgBqQ/rixTMOx2AbbfbEE=
 github.com/socious-io/go-socious-id v0.1.2 h1:zuBtuGm6GLBHIbdbeEbc8CrR3jss2iAecepMuYyOsTk=
 github.com/socious-io/go-socious-id v0.1.2/go.mod h1:tHIbFvO0MuOOvZtkchefSlzgBqQ/rixTMOx2AbbfbEE=
+github.com/socious-io/goaccount v0.1.5 h1:XqM0jCi6O0vkRo2crKfj0c6mvhOuolqzN6/CWzBUtR4=
+github.com/socious-io/goaccount v0.1.5/go.mod h1:K7ytNN/khoKgWYsn2Un56RNA8uvd881f/jFtSoAkqTw=
+github.com/socious-io/goaccount v0.1.6 h1:MJfMooPDbQlsN5xFeJbDl2t8+Bs01q+aiQcylvrm52E=
+github.com/socious-io/goaccount v0.1.6/go.mod h1:K7ytNN/khoKgWYsn2Un56RNA8uvd881f/jFtSoAkqTw=
 github.com/socious-io/gopay v0.0.0-20241224091521-a679ccd217e5 h1:jXcq43Qd5BW6dPDvfglCNZjN8VbwVamj6A04lBy+/nE=
 github.com/socious-io/gopay v0.0.0-20241224091521-a679ccd217e5/go.mod h1:aG4FFONDbP7AepJ5arN6ga72Kk/CFc9PIpbJGaJYHMw=
 github.com/socious-io/gopay v0.0.0-20241225142711-b2336fda85c6 h1:rBfhmn+vBBkd2zy0KeOEA+HVeUe4zkEra6INYoPmP9I=

@@ -6,7 +6,7 @@ import (
 	"socious/src/config"
 	"time"
 
-	sociousid "github.com/socious-io/go-socious-id"
+	goaccount "github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 )
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	//Configure Socious ID SDK
-	sociousid.Setup(sociousid.Config{
+	goaccount.Setup(goaccount.Config{
 		Host:   config.Config.SSO.Host,
 		ID:     config.Config.SSO.ID,
 		Secret: config.Config.SSO.Secret,

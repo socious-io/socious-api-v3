@@ -66,3 +66,12 @@ type ContractFeedbackForm struct {
 	Content   string `json:"content" validate:"required"`
 	Satisfied bool   `json:"satisfied" validate:"required"`
 }
+
+type UserUpdateForm struct {
+	Username  *string    `json:"username" validate:"required,min=3,max=32"`
+	Bio       *string    `json:"bio"`
+	FirstName string     `json:"first_name" validate:"required,min=3,max=32"`
+	LastName  string     `json:"last_name" validate:"required,min=3,max=32"`
+	Phone     *string    `json:"phone"`
+	AvatarID  *uuid.UUID `json:"avatar_id"`
+}

@@ -8,7 +8,7 @@ import (
 	"socious/src/apps/utils"
 
 	"github.com/gin-gonic/gin"
-	sociousid "github.com/socious-io/go-socious-id"
+	"github.com/socious-io/goaccount"
 )
 
 func authGroup(router *gin.Engine) {
@@ -45,7 +45,7 @@ func authGroup(router *gin.Engine) {
 	g.GET("/login", func(c *gin.Context) {
 		redirect_url := c.Query("redirect_url")
 
-		_, entrypoint, err := sociousid.StartSession(redirect_url)
+		_, entrypoint, err := goaccount.StartSession(redirect_url)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -65,23 +65,25 @@ func authGroup(router *gin.Engine) {
 		}
 
 		//Get the token from Socious ID
-		sessionToken, err := sociousid.GetSessionToken(code)
+		sessionToken, err := goaccount.GetSessionToken(code)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		//Get User's information from Socious ID
-		user := new(models.User)
-		err = sociousid.GetUserProfile(sessionToken.AccessToken, &user)
+		sessionUser := new(models.User)
+		err = sessionToken.GetUserProfile(&sessionUser)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		user, err = models.GetUserByEmail(user.Email)
+		user, err := models.GetUserByEmail(sessionUser.Email)
 		if err != nil {
 			//Try to create user if doesn't exist
+			user := new(models.User)
+			utils.Copy(sessionUser, user)
 			err = user.Create(ctx.(context.Context))
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -96,7 +98,7 @@ func authGroup(router *gin.Engine) {
 			return
 		}
 
-		oauthConnect, err := models.GetOauthConnectByIdentityId(user.ID, models.OauthConnectedProvidersSociousId)
+		oauthConnect, err := models.GetOauthConnectByEmail(user.Email, models.OauthConnectedProvidersSociousId)
 
 		if err != nil && oauthConnect == nil {
 			oauthConnect = &models.OauthConnect{
@@ -107,14 +109,11 @@ func authGroup(router *gin.Engine) {
 				IdentityId:     user.ID,
 			}
 			err = oauthConnect.Create(ctx.(context.Context))
-		} else if err != nil && oauthConnect != nil {
+		} else if oauthConnect != nil {
 			oauthConnect.MatrixUniqueId = tokens["access_token"].(string)
 			oauthConnect.AccessToken = sessionToken.AccessToken
 			oauthConnect.RefreshToken = &sessionToken.RefreshToken
 			err = oauthConnect.Update(ctx.(context.Context))
-		} else if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
 		}
 
 		if err != nil {

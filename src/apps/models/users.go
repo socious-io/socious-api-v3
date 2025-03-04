@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
@@ -143,7 +144,18 @@ func (u *User) UpdatePassword(ctx context.Context) error {
 	return nil
 }
 
-func (u *User) UpdateProfile(ctx context.Context) error {
+func (u *User) UpdateProfile(ctx context.Context, oauthSession *goaccount.SessionToken) error {
+
+	id := u.ID
+	if oauthSession != nil {
+		//update profile
+		err := oauthSession.UpdateUserProfile(u)
+		if err != nil {
+			return err
+		}
+		u.ID = id
+	}
+
 	rows, err := database.Query(
 		ctx,
 		"users/update",

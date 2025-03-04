@@ -8,7 +8,6 @@ import (
 	"socious/src/apps/utils"
 
 	"github.com/gin-gonic/gin"
-	sociousid "github.com/socious-io/go-socious-id"
 )
 
 func usersGroup(router *gin.Engine) {
@@ -17,63 +16,33 @@ func usersGroup(router *gin.Engine) {
 
 	g.GET("/", func(c *gin.Context) {
 		user := c.MustGet("user").(*models.User)
-		ctx, _ := c.Get("ctx")
-
-		//Fetching Socious ID token
-		oauthConnect, err := models.GetOauthConnectByIdentityId(user.ID, models.OauthConnectedProvidersSociousId)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		//Get User's information from Socious ID
-		userSociousID := new(models.User)
-		err = sociousid.GetUserProfile(oauthConnect.AccessToken, &userSociousID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		//Updating user on local
-		utils.Copy(userSociousID, user)
-		err = user.UpdateProfile(ctx.(context.Context))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
 		c.JSON(http.StatusOK, user)
-
 	})
 
-	g.PUT("/hook", func(c *gin.Context) {
-		ctx, _ := c.Get("ctx")
+	g.PUT("/", auth.LoginRequired(), func(c *gin.Context) {
+		ctx := c.MustGet("ctx").(context.Context)
+		user := c.MustGet("user").(*models.User)
 
-		form := new(models.User)
+		form := new(UserUpdateForm)
 		if err := c.ShouldBindJSON(form); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		//Fetching Socious ID token
-		oauthConnect, err := models.GetOauthConnectByEmail(form.Email, models.OauthConnectedProvidersSociousId)
+		oauthConnect, err := models.GetOauthConnectByEmail(user.Email, models.OauthConnectedProvidersSociousId)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		//Get User's information from Socious ID
-		userSociousID := new(models.User)
-		err = sociousid.GetUserProfile(oauthConnect.AccessToken, &userSociousID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+		oauthSession := oauthConnect.SociousIdSession()
 
 		//Updating user on local
-		user := new(models.User)
-		utils.Copy(userSociousID, user)
-		err = user.UpdateProfile(ctx.(context.Context))
+		userId := user.ID
+		utils.Copy(form, user)
+		user.ID = userId
+
+		err = user.UpdateProfile(ctx, &oauthSession)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
