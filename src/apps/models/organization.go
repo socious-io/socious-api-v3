@@ -63,9 +63,17 @@ func (*Organization) Create() error {
 	return nil
 }
 
-func (*Organization) Update() error {
-	return nil
-}
+// func (*Organization) Update() error {
+// 	id := u.ID
+// 	if oauthSession != nil {
+// 		//update profile
+// 		err := oauthSession.UpdateUserProfile(u)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		u.ID = id
+// 	}
+// }
 
 func (*Organization) Remove() error {
 	return nil

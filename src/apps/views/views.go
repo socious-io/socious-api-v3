@@ -8,4 +8,5 @@ func Init(r *gin.Engine) {
 	projectsGroup(r)
 	contractsGroup(r)
 	usersGroup(r)
+	mediaGroup(r)
 }

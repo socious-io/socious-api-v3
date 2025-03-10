@@ -75,3 +75,38 @@ type UserUpdateForm struct {
 	Phone     *string    `json:"phone"`
 	AvatarID  *uuid.UUID `json:"avatar_id"`
 }
+
+type OrganizationUpdateForm struct {
+	ID                uuid.UUID  `db:"id" json:"id"`
+	Name              *string    `db:"name" json:"name"`
+	Bio               *string    `db:"bio" json:"bio"`
+	Description       *string    `db:"description" json:"description"`
+	Email             *string    `db:"email" json:"email"`
+	Phone             *string    `db:"phone" json:"phone"`
+	City              *string    `db:"city" json:"city"`
+	Type              string     `db:"type" json:"type"` //type -> organization_type DEFAULT 'OTHER'
+	Address           *string    `db:"address" json:"address"`
+	Website           *string    `db:"website" json:"website"`
+	SocialCauses      []string   `db:"social_causes" json:"social_causes"` //type -> social_causes_type[]
+	Followers         int        `db:"followers" json:"followers"`
+	Followings        int        `db:"followings" json:"followings"`
+	Country           *string    `db:"country" json:"country"`
+	WalletAddress     *string    `db:"wallet_address" json:"wallet_address"`
+	ImpactPoints      float64    `db:"impact_points" json:"impact_points"`
+	Mission           *string    `db:"mission" json:"mission"`
+	Culture           *string    `db:"culture" json:"culture"`
+	Logo              *uuid.UUID `db:"image" json:"image"`
+	Avatar            *uuid.UUID `db:"cover_image" json:"cover_image"`
+	MobileCountryCode *string    `db:"mobile_country_code" json:"mobile_country_code"`
+	CreatedBy         *uuid.UUID `db:"created_by" json:"created_by"`
+	Shortname         string     `db:"shortname" json:"shortname"`
+	OtherPartyId      *string    `db:"other_party_id" json:"other_party_id"`
+	OtherPartyTitle   *string    `db:"other_party_title" json:"other_party_title"`
+	OtherPartyUrl     *string    `db:"other_party_url" json:"other_party_url"`
+	GeonameId         *int       `db:"geoname_id" json:"geoname_id"`
+	VerifiedImpact    bool       `db:"verified_impact" json:"verified_impact"`
+	Hiring            bool       `db:"hiring" json:"hiring"`
+	Size              *string    `db:"size" json:"size"`
+	Industry          *string    `db:"industry" json:"industry"`
+	Did               *string    `db:"did" json:"did"`
+}

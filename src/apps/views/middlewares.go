@@ -1,6 +1,8 @@
 package views
 
 import (
+	"net/http"
+	"socious/src/apps/models"
 	"strconv"
 	"strings"
 
@@ -46,5 +48,20 @@ func paginate() gin.HandlerFunc {
 		c.Set("page", page)
 		c.Next()
 
+	}
+}
+
+func sociousIdSession() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := c.MustGet("user").(*models.User)
+
+		//Fetching Socious ID token
+		oauthConnect, err := models.GetOauthConnectByEmail(user.Email, models.OauthConnectedProvidersSociousId)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.Set("socious_id_session", oauthConnect.SociousIdSession())
 	}
 }

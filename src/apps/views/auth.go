@@ -42,7 +42,34 @@ func authGroup(router *gin.Engine) {
 		c.JSON(http.StatusOK, tokens)
 	})
 
-	g.GET("/login", func(c *gin.Context) {
+	g.POST("/login", func(c *gin.Context) {
+		form := new(auth.LoginForm)
+		if err := c.ShouldBindJSON(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		u, err := models.GetUserByEmail(form.Email)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := auth.CheckPasswordHash(form.Password, *u.Password); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "email/password mismatch"})
+			return
+		}
+
+		tokens, err := auth.GenerateFullTokens(u.ID.String())
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, tokens)
+	})
+
+	g.GET("/sso/login", func(c *gin.Context) {
 		redirect_url := c.Query("redirect_url")
 
 		_, entrypoint, err := goaccount.StartSession(redirect_url)
@@ -54,7 +81,7 @@ func authGroup(router *gin.Engine) {
 		c.Redirect(http.StatusTemporaryRedirect, entrypoint)
 	})
 
-	g.POST("/token", func(c *gin.Context) {
+	g.POST("/sso/token", func(c *gin.Context) {
 
 		code, status := c.Query("code"), c.Query("status")
 		ctx, _ := c.Get("ctx")

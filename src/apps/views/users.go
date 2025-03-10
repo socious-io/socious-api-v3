@@ -14,12 +14,12 @@ func usersGroup(router *gin.Engine) {
 	g := router.Group("users")
 	g.Use(auth.LoginRequired())
 
-	g.GET("/", func(c *gin.Context) {
+	g.GET("", func(c *gin.Context) {
 		user := c.MustGet("user").(*models.User)
 		c.JSON(http.StatusOK, user)
 	})
 
-	g.PUT("/", auth.LoginRequired(), func(c *gin.Context) {
+	g.PUT("", auth.LoginRequired(), func(c *gin.Context) {
 		ctx := c.MustGet("ctx").(context.Context)
 		user := c.MustGet("user").(*models.User)
 
