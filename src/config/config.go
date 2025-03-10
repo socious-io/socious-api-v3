@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	"gopkg.in/yaml.v2"
 )
@@ -15,6 +16,8 @@ type ConfigType struct {
 	Debug  bool   `mapstructure:"debug"`
 	Secret string `mapstructure:"secret"`
 	SSO    struct {
+		Host   string `mapstructure:"host"`
+		ID     string `mapstructure:"id"`
 		Secret string `mapstructure:"secret"`
 	} `mapstructure:"sso"`
 	Host     string `mapstructure:"host"`
@@ -37,11 +40,16 @@ type ConfigType struct {
 		Url   string `mapstructure:"url"`
 		Token string `mapstructure:"token"`
 	} `mapstructure:"nats"`
-
 	Payment struct {
 		Chains gopay.Chains `mapstructure:"chains"`
 		Fiats  gopay.Fiats  `mapstructure:"fiats"`
 	} `mapstructure:"payment"`
+	Upload struct {
+		Bucket      string `mapstructure:"bucket"`
+		CDN         string `mapstructure:"cdn"`
+		Credentials string `mapstructure:"credentials"`
+	} `mapstructure:"upload"`
+	GoAccounts goaccount.Config `mapstructure:"goaccounts"`
 }
 
 func Init(filename string) (*ConfigType, error) {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
@@ -29,7 +30,6 @@ type User struct {
 	Mission             *string        `db:"mission" json:"mission"`
 	Bio                 *string        `db:"bio" json:"-"`
 	ViewAs              *int           `db:"view_as" json:"view_as"`
-	JobTitle            *string        `db:"job_title" json:"job_title"`
 	AvatarID            *uuid.UUID     `db:"avatar_id" json:"avatar_id"`
 	PasswordExpired     bool           `db:"password_expired" json:"password_expired"`
 	Language            *string        `db:"language" json:"language"`
@@ -144,11 +144,22 @@ func (u *User) UpdatePassword(ctx context.Context) error {
 	return nil
 }
 
-func (u *User) UpdateProfile(ctx context.Context) error {
+func (u *User) UpdateProfile(ctx context.Context, oauthSession *goaccount.SessionToken) error {
+
+	id := u.ID
+	if oauthSession != nil {
+		//update profile
+		err := oauthSession.UpdateUserProfile(u)
+		if err != nil {
+			return err
+		}
+		u.ID = id
+	}
+
 	rows, err := database.Query(
 		ctx,
-		"users/update_profile",
-		u.ID, u.FirstName, u.LastName, u.Bio, u.JobTitle, u.Phone, u.Username,
+		"users/update",
+		u.ID, u.FirstName, u.LastName, u.Bio, u.Phone, u.Username,
 	)
 	if err != nil {
 		return err

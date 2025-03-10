@@ -6,6 +6,7 @@ import (
 	"socious/src/config"
 	"time"
 
+	goaccount "github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 )
@@ -28,6 +29,13 @@ func main() {
 	}); err != nil {
 		log.Fatalf("gopay error %v", err)
 	}
+
+	//Configure Socious ID SDK
+	goaccount.Setup(goaccount.Config{
+		Host:   config.Config.SSO.Host,
+		ID:     config.Config.SSO.ID,
+		Secret: config.Config.SSO.Secret,
+	})
 
 	apps.Serve()
 }
