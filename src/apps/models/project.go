@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/socious-io/gomq"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
@@ -153,6 +154,10 @@ func (p *Project) Create(ctx context.Context, workSamples []uuid.UUID) error {
 	rows.Close()
 	tx.Commit()
 
+	gomq.Mq.SendJson("index_projects", map[string]string{
+		"id": p.ID.String(),
+	})
+
 	return database.Fetch(p, p.ID)
 }
 
@@ -233,6 +238,10 @@ func (p *Project) Update(ctx context.Context, workSamples []uuid.UUID) error {
 	rows.Close()
 	tx.Commit()
 
+	gomq.Mq.SendJson("index_projects", map[string]string{
+		"id": p.ID.String(),
+	})
+
 	return database.Fetch(p, p.ID)
 }
 
@@ -242,6 +251,11 @@ func (p *Project) Delete(ctx context.Context) error {
 		return err
 	}
 	defer rows.Close()
+
+	gomq.Mq.SendJson("index_projects", map[string]string{
+		"id": p.ID.String(),
+	})
+
 	return nil
 }
 
