@@ -229,7 +229,7 @@ func contractsGroup(router *gin.Engine) {
 	g.POST("/:id/deposit", func(c *gin.Context) {
 		user := c.MustGet("user").(*models.User)
 		identity := c.MustGet("identity").(*models.Identity)
-		ctx, _ := c.Get("ctx")
+		ctx := context.Background()
 
 		id := c.Param("id")
 
@@ -349,9 +349,10 @@ func contractsGroup(router *gin.Engine) {
 			err = payment.ConfirmDeposit(TxID, form.Meta)
 		}
 
-		//Updating contract
+		fmt.Printf("Payment Error: %v\n", err)
+
 		contract.PaymentID = &payment.ID
-		contract.Update(ctx.(context.Context), nil)
+		err = contract.Update(ctx, nil)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
