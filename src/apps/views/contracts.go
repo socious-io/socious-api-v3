@@ -43,7 +43,10 @@ func contractsGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		contract.Amounts = lib.CalculateAmounts(lib.AmountsOptionsFromContract(*contract))
+
+		orgReferrer, _ := models.GetReferring(contract.ProviderID)
+		userReferrer, _ := models.GetReferring(contract.ClientID)
+		contract.Amounts = lib.CalculateAmounts(lib.AmountsOptionsFromContract(*contract, orgReferrer, userReferrer))
 
 		c.JSON(http.StatusOK, contract)
 	})
@@ -66,7 +69,10 @@ func contractsGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		contract.Amounts = lib.CalculateAmounts(lib.AmountsOptionsFromContract(*contract))
+
+		orgReferrer, _ := models.GetReferring(contract.ProviderID)
+		userReferrer, _ := models.GetReferring(contract.ClientID)
+		contract.Amounts = lib.CalculateAmounts(lib.AmountsOptionsFromContract(*contract, orgReferrer, userReferrer))
 
 		c.JSON(http.StatusCreated, contract)
 	})
