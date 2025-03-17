@@ -331,7 +331,7 @@ func contractsGroup(router *gin.Engine) {
 			if _, err := payment.AddIdentity(gopay.IdentityParams{
 				ID:       identity.ID,
 				RoleName: "assignee",
-				Account:  *destinationAccount,
+				Account:  destinationAccount,
 				Amount:   float64(contract.TotalAmount),
 			}); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
