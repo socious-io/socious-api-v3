@@ -239,21 +239,21 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		//Fetching Contract
+		// Fetching Contract
 		contract, err := models.GetContract(uuid.MustParse(id))
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		//Fetching Client
+		// Fetching Client
 		provider, err := models.GetIdentity(contract.ProviderID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("provider fetch error : %v", err)})
 			return
 		}
 
-		//Determine Currency
+		// Determine Currency
 		var currency gopay.Currency
 		if contract.Currency == nil && *contract.PaymentType == models.PaymentModeTypeFiat {
 			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Currency is nil in Fiat payment : %v", err)})
@@ -286,7 +286,8 @@ func contractsGroup(router *gin.Engine) {
 			return
 		}
 
-		var sourceAccount, destinationAccount *string
+		var sourceAccount, destinationAccount string
+
 		if *contract.PaymentType == models.PaymentModeTypeFiat {
 			//Set Source account
 			card, err := models.GetCard(*form.CardID, provider.ID)
@@ -294,7 +295,9 @@ func contractsGroup(router *gin.Engine) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe customer"})
 				return
 			}
-			sourceAccount = card.Customer
+			if card.Customer != nil {
+				sourceAccount = *card.Customer
+			}
 
 			//Set Destination account
 			oauthConnect, err := models.GetOauthConnectByIdentityId(contract.ClientID, models.OauthConnectedProvidersStripeJp)
@@ -302,15 +305,13 @@ func contractsGroup(router *gin.Engine) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
 				return
 			}
-			destinationAccount = &oauthConnect.MatrixUniqueId
+			destinationAccount = oauthConnect.MatrixUniqueId
 
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {
-			if user.WalletAddress == nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Missing wallet address on provider"})
-				return
+			if user.WalletAddress != nil {
+				sourceAccount = *user.WalletAddress
 			}
-			sourceAccount = user.WalletAddress
 			payment.SetToCryptoMode(*contract.CryptoCurrency, float64(contract.CurrencyRate))
 		}
 
@@ -318,7 +319,7 @@ func contractsGroup(router *gin.Engine) {
 		if _, err := payment.AddIdentity(gopay.IdentityParams{
 			ID:       identity.ID,
 			RoleName: "assigner",
-			Account:  *sourceAccount,
+			Account:  sourceAccount,
 			Amount:   0,
 		}); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -330,7 +331,7 @@ func contractsGroup(router *gin.Engine) {
 			if _, err := payment.AddIdentity(gopay.IdentityParams{
 				ID:       identity.ID,
 				RoleName: "assignee",
-				Account:  *destinationAccount,
+				Account:  destinationAccount,
 				Amount:   float64(contract.TotalAmount),
 			}); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
