@@ -12,7 +12,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
-	github.com/socious-io/gomq v0.1.5
+	github.com/socious-io/gomq v0.1.6
 	github.com/socious-io/gopay v0.0.19
 	gopkg.in/yaml.v2 v2.4.0
 )
