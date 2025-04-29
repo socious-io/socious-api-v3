@@ -350,11 +350,13 @@ func contractsGroup(router *gin.Engine) {
 			err = payment.ConfirmDeposit(TxID, form.Meta)
 		}
 
-		fmt.Printf("Payment Error: %v\n", err)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
 		contract.PaymentID = &payment.ID
-		err = contract.Update(ctx, nil)
-		if err != nil {
+		if err = contract.Update(ctx, nil); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
