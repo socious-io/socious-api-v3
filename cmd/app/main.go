@@ -7,6 +7,7 @@ import (
 	"time"
 
 	goaccount "github.com/socious-io/goaccount"
+	"github.com/socious-io/gomq"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 )
@@ -29,6 +30,14 @@ func main() {
 	}); err != nil {
 		log.Fatalf("gopay error %v", err)
 	}
+
+	//Initializing GoMQ Library
+	gomq.Setup(gomq.Config{
+		Url:        config.Config.Nats.Url,
+		Token:      config.Config.Nats.Token,
+		ChannelDir: "",
+	})
+	gomq.Connect()
 
 	//Configure Socious ID SDK
 	goaccount.Setup(goaccount.Config{
