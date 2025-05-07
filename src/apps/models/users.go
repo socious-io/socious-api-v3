@@ -2,8 +2,10 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"github.com/jmoiron/sqlx/types"
 	"github.com/lib/pq"
 	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
@@ -38,8 +40,10 @@ type User struct {
 	SocialCauses        pq.StringArray `db:"social_causes" json:"social_causes"` // social_causes_type[] as typ
 	Followers           int            `db:"followers" json:"followers"`
 	Followings          int            `db:"followings" json:"followings"`
-	Avatar              *uuid.UUID     `db:"avatar" json:"avatar"`
-	CoverImage          *uuid.UUID     `db:"cover_image" json:"cover_image"`
+	Avatar              *Media         `db:"-" json:"avatar"`
+	AvatarJson          types.JSONText `db:"avatar" json:"-"`
+	Cover               *Media         `db:"-" json:"cover"`
+	CoverJson           types.JSONText `db:"cover" json:"-"`
 	Skills              pq.StringArray `db:"skills" json:"skills"`
 	Country             *string        `db:"country" json:"country"`
 	MobileCountryCode   *string        `db:"mobile_country_code" json:"mobile_country_code"`
@@ -203,4 +207,36 @@ func GetUserByUsername(username string) (*User, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (u *User) Upsert(ctx context.Context) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
+	if u.Avatar != nil {
+		b, _ := json.Marshal(u.Avatar)
+		u.AvatarJson.Scan(b)
+	}
+	if u.Cover != nil {
+		b, _ := json.Marshal(u.Cover)
+		u.CoverJson.Scan(b)
+	}
+	rows, err := database.Query(
+		ctx,
+		"users/upsert",
+		u.ID,
+		u.FirstName, u.LastName, u.Username, u.Email,
+		u.City, u.Country, u.AvatarJson, u.CoverJson,
+		u.Language, u.ImpactPoints, u.IdentityVerifiedAt,
+	)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.StructScan(u); err != nil {
+			return err
+		}
+	}
+	return nil
 }

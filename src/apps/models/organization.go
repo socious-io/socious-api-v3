@@ -87,22 +87,12 @@ func (*Organization) ToggleHiring() error {
 	return nil
 }
 
-func getAllOrganizations() ([]Organization, error) {
-	result := []Organization{}
-	return result, nil
-}
-
-func GetOrganization(id uuid.UUID, identity uuid.UUID) (*Organization, error) {
+func GetOrganization(id uuid.UUID) (*Organization, error) {
 	o := new(Organization)
 	if err := database.Fetch(o, id.String()); err != nil {
 		return nil, err
 	}
 	return o, nil
-}
-
-func getManyOrganizations(ids []uuid.UUID, identity uuid.UUID) ([]Organization, error) {
-	result := []Organization{}
-	return result, nil
 }
 
 func GetOrganizationByShortname(shortname string, identity uuid.UUID) (*Organization, error) {
@@ -113,11 +103,27 @@ func GetOrganizationByShortname(shortname string, identity uuid.UUID) (*Organiza
 	return o, nil
 }
 
-func shortnameExistsOrganization(shortname string) (bool, error) {
-	return false, nil
-}
+func GetUserOrganizations(userId uuid.UUID) ([]Organization, error) {
+	var (
+		orgs      = []Organization{}
+		fetchList []database.FetchList
+		ids       []interface{}
+	)
 
-func searchOrganizations(query string) ([]Organization, error) { // Do we need to implement this?
-	result := []Organization{}
-	return result, nil
+	if err := database.QuerySelect("organizations/get_by_member", &fetchList, userId); err != nil {
+		return orgs, err
+	}
+
+	if len(fetchList) < 1 {
+		return orgs, nil
+	}
+
+	for _, f := range fetchList {
+		ids = append(ids, f.ID)
+	}
+
+	if err := database.Fetch(&orgs, ids...); err != nil {
+		return orgs, err
+	}
+	return orgs, nil
 }

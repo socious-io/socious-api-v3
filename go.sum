@@ -123,6 +123,8 @@ github.com/gogo/protobuf v1.3.2 h1:Ov1cvc58UF3b5XjBnZv7+opcTcQFZebYjWzi34vdm4Q=
 github.com/gogo/protobuf v1.3.2/go.mod h1:P1XiOD3dCwIKUDQYPy72D8LYyHL2YPYrpS2s69NZV8Q=
 github.com/golang-jwt/jwt/v5 v5.2.1 h1:OuVbFODueb089Lh128TAcimifWaLhJwVflnrgM17wHk=
 github.com/golang-jwt/jwt/v5 v5.2.1/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
+github.com/golang-jwt/jwt/v5 v5.2.2 h1:Rl4B7itRWVtYIHFrSNd7vhTiz9UpLdi6gZhZ3wEeDy8=
+github.com/golang-jwt/jwt/v5 v5.2.2/go.mod h1:pqrtFR0X4osieyHYxtmOUWsAWrfe1Q5UVIyoH402zdk=
 github.com/golang-migrate/migrate/v4 v4.17.1 h1:4zQ6iqL6t6AiItphxJctQb3cFqWiSpMnX7wLTPnnYO4=
 github.com/golang-migrate/migrate/v4 v4.17.1/go.mod h1:m8hinFyWBn0SA4QKHuKh175Pm9wjmxj3S2Mia7dbXzM=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
@@ -241,6 +243,8 @@ github.com/socious-io/goaccount v0.1.7-0.20250308155733-baf7aa7c9c9f h1:wGwBdKWj
 github.com/socious-io/goaccount v0.1.7-0.20250308155733-baf7aa7c9c9f/go.mod h1:K7ytNN/khoKgWYsn2Un56RNA8uvd881f/jFtSoAkqTw=
 github.com/socious-io/goaccount v0.1.7-0.20250310011224-7a2d7dc6a78d h1:AO9rYunIddaelm3Il63VCZJQ03hgIvurPJDiWjMIhPg=
 github.com/socious-io/goaccount v0.1.7-0.20250310011224-7a2d7dc6a78d/go.mod h1:K7ytNN/khoKgWYsn2Un56RNA8uvd881f/jFtSoAkqTw=
+github.com/socious-io/goaccount v0.1.91 h1:inLhwmYBx7+WiBzYX6J861UI6rv4F5LxZ7Zkkw11CzM=
+github.com/socious-io/goaccount v0.1.91/go.mod h1:Qw96MXiR3gcvBgppSe3gmt9TP9I/rJIG5tq1T0eSU/g=
 github.com/socious-io/gomq v0.1.5 h1:pbl4D3H99f8MhOiS1bF1d4JZbYAiIZXN6psCglMt2kw=
 github.com/socious-io/gomq v0.1.5/go.mod h1:1id1vbRoza/j6BQGuXYYrzwbOOeq2Ii97U2bkwuSIoQ=
 github.com/socious-io/gopay v0.0.0-20241224091521-a679ccd217e5 h1:jXcq43Qd5BW6dPDvfglCNZjN8VbwVamj6A04lBy+/nE=

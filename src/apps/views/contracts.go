@@ -302,7 +302,7 @@ func contractsGroup(router *gin.Engine) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
 				return
 			}
-			destinationAccount = &oauthConnect.MatrixUniqueId
+			destinationAccount = &oauthConnect.MatrixUniqueID
 
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {

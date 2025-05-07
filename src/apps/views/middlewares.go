@@ -2,7 +2,9 @@ package views
 
 import (
 	"net/http"
+	"socious/src/apps/auth"
 	"socious/src/apps/models"
+	"socious/src/config"
 	"strconv"
 	"strings"
 
@@ -63,5 +65,20 @@ func sociousIdSession() gin.HandlerFunc {
 		}
 
 		c.Set("socious_id_session", oauthConnect.SociousIdSession())
+	}
+}
+
+func AccountCenterRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Request.Header.Get("x-account-center-id")
+		secret := c.Request.Header.Get("x-account-center-secret")
+		hash, _ := auth.HashPassword(secret)
+
+		if id != config.Config.GoAccounts.ID || auth.CheckPasswordHash(secret, hash) != nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Account center required"})
+			c.Abort()
+			return
+		}
+		c.Next()
 	}
 }

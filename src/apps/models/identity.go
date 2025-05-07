@@ -31,3 +31,11 @@ func GetIdentity(id uuid.UUID) (*Identity, error) {
 	}
 	return i, nil
 }
+
+func GetIdentities(ids []interface{}) ([]Identity, error) {
+	var identities []Identity
+	if err := database.Fetch(&identities, ids...); err != nil {
+		return nil, err
+	}
+	return identities, nil
+}

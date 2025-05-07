@@ -110,3 +110,8 @@ type OrganizationUpdateForm struct {
 	Industry          *string    `db:"industry" json:"industry"`
 	Did               *string    `db:"did" json:"did"`
 }
+
+type SyncForm struct {
+	Organizations []models.Organization `json:"organizations"`
+	User          models.User           `json:"user" validate:"required"`
+}

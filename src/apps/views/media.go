@@ -12,16 +12,15 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/socious-io/goaccount"
+	"github.com/google/uuid"
 )
 
 func mediaGroup(router *gin.Engine) {
 	g := router.Group("media")
 	g.Use(auth.LoginRequired())
 
-	g.POST("", auth.LoginRequired(), sociousIdSession(), func(c *gin.Context) {
+	g.POST("", auth.LoginRequired(), func(c *gin.Context) {
 		identity := c.MustGet("identity").(*models.Identity)
-		sessionToken := c.MustGet("socious_id_session").(goaccount.SessionToken)
 
 		file, err := c.FormFile("file")
 		if err != nil {
@@ -56,14 +55,6 @@ func mediaGroup(router *gin.Engine) {
 			return
 		}
 
-		sessionMedia := new(models.Media)
-		if err := sessionToken.UploadMedia(src, &sessionMedia); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-
-		fmt.Println(sessionMedia)
-
 		media := &models.Media{
 			Filename:   file.Filename,
 			URL:        fileURL,
@@ -79,8 +70,15 @@ func mediaGroup(router *gin.Engine) {
 
 	})
 
-	// g.GET("/:id", func(c *gin.Context) {
-	// 	identity := c.MustGet("identity").(*models.Identity)
+	g.GET("/:id", func(c *gin.Context) {
+		id := c.Param("id")
 
-	// })
+		media, err := models.GetMedia(uuid.MustParse(id))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, media)
+	})
 }
