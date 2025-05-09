@@ -2,7 +2,6 @@ package views
 
 import (
 	"net/http"
-	"socious/src/apps/auth"
 	"socious/src/apps/models"
 	"socious/src/config"
 	"strconv"
@@ -11,7 +10,89 @@ import (
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/socious-io/goauth"
 )
+
+/*
+* Authorization
+ */
+
+func LoginRequired() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenStr := c.GetHeader("Authorization")
+
+		claims, err := goauth.ClaimsFromBearerToken(tokenStr)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+
+		u, err := models.GetUser(uuid.MustParse(claims.ID))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		c.Set("user", u)
+
+		//Safeguarding Identity if it was empty
+		var identity *models.Identity
+		identityStr := c.GetHeader(http.CanonicalHeaderKey("current-identity"))
+		identityUUID, err := uuid.Parse(identityStr)
+		if err == nil {
+			identity, err = models.GetIdentity(identityUUID)
+		} else {
+			identity, err = models.GetIdentity(u.ID)
+		}
+
+		c.Set("identity", identity)
+		c.Next()
+	}
+}
+
+func LoginOptional() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenStr := c.GetHeader("Authorization")
+
+		claims, err := goauth.ClaimsFromBearerToken(tokenStr)
+		if err != nil {
+			c.Next()
+			return
+		}
+
+		u, err := models.GetUser(uuid.MustParse(claims.ID))
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			c.Abort()
+			return
+		}
+		c.Set("user", u)
+
+		var identity *models.Identity
+
+		identityStr := c.GetHeader(http.CanonicalHeaderKey("current-identity"))
+		if identityUUID, err := uuid.Parse(identityStr); err == nil {
+			identity, _ = models.GetIdentity(identityUUID)
+		}
+		if identity == nil {
+			identity, _ = models.GetIdentity(u.ID)
+		}
+
+		if identity.Type == models.IdentityTypeOrganizations {
+			if _, err := models.Member(identity.ID, u.ID); err != nil {
+				c.JSON(http.StatusForbidden, gin.H{"error": "Identitiy not allowed"})
+				c.Abort()
+				return
+			}
+		}
+
+		c.Set("identity", identity)
+
+		c.Next()
+	}
+}
 
 func paginate() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -53,28 +134,13 @@ func paginate() gin.HandlerFunc {
 	}
 }
 
-func sociousIdSession() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		user := c.MustGet("user").(*models.User)
-
-		//Fetching Socious ID token
-		oauthConnect, err := models.GetOauthConnectByEmail(user.Email, models.OauthConnectedProvidersSociousId)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.Set("socious_id_session", oauthConnect.SociousIdSession())
-	}
-}
-
 func AccountCenterRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Request.Header.Get("x-account-center-id")
 		secret := c.Request.Header.Get("x-account-center-secret")
-		hash, _ := auth.HashPassword(secret)
+		hash, _ := goauth.HashPassword(secret)
 
-		if id != config.Config.GoAccounts.ID || auth.CheckPasswordHash(secret, hash) != nil {
+		if id != config.Config.GoAccounts.ID || goauth.CheckPasswordHash(secret, hash) != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Account center required"})
 			c.Abort()
 			return

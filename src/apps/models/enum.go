@@ -343,7 +343,7 @@ type OauthConnectedProviders string
 const (
 	OauthConnectedProvidersStripe    OauthConnectedProviders = "STRIPE"
 	OauthConnectedProvidersStripeJp  OauthConnectedProviders = "STRIPE_JP"
-	OauthConnectedProvidersSociousId OauthConnectedProviders = "SOCIOUS_ID"
+	OauthConnectedProvidersSociousID OauthConnectedProviders = "SOCIOUS_ID"
 )
 
 func (ocp *OauthConnectedProviders) Scan(value interface{}) error {
@@ -366,4 +366,20 @@ func scanEnum(value interface{}, target interface{}) error {
 		return fmt.Errorf("failed to scan type: %v", value) // Error on unsupported type.
 	}
 	return nil
+}
+
+type OrganizationStatus string
+
+const (
+	OrganizationStatusActive    OrganizationStatus = "ACTIVE"
+	OrganizationStatusNotActive OrganizationStatus = "NOT_ACTIVE"
+	OrganizationStatusPending   OrganizationStatus = "PENDING"
+)
+
+func (os *OrganizationStatus) Scan(value interface{}) error {
+	return scanEnum(value, (*string)(os))
+}
+
+func (os OrganizationStatus) Value() (driver.Value, error) {
+	return string(os), nil
 }

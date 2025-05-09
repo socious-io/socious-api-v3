@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
-	"socious/src/apps/auth"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
 	"time"
@@ -17,9 +16,9 @@ import (
 
 func mediaGroup(router *gin.Engine) {
 	g := router.Group("media")
-	g.Use(auth.LoginRequired())
+	g.Use(LoginRequired())
 
-	g.POST("", auth.LoginRequired(), func(c *gin.Context) {
+	g.POST("", LoginRequired(), func(c *gin.Context) {
 		identity := c.MustGet("identity").(*models.Identity)
 
 		file, err := c.FormFile("file")

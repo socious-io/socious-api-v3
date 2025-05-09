@@ -2,155 +2,121 @@ package views
 
 import (
 	"context"
+	"log"
 	"net/http"
-	"socious/src/apps/auth"
 	"socious/src/apps/models"
-	"socious/src/apps/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/socious-io/goaccount"
+	"github.com/socious-io/goauth"
 )
 
 func authGroup(router *gin.Engine) {
 	g := router.Group("auth")
 
-	g.POST("/register", func(c *gin.Context) {
-		form := new(auth.RegisterForm)
+	g.POST("", func(c *gin.Context) {
+		form := new(AuthForm)
 		if err := c.ShouldBindJSON(form); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		u := new(models.User)
-		utils.Copy(form, u)
-		if form.Password != nil {
-			password, _ := auth.HashPassword(*form.Password)
-			u.Password = &password
-		}
-
-		ctx, _ := c.Get("ctx")
-		if err := u.Create(ctx.(context.Context)); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		tokens, err := auth.GenerateFullTokens(u.ID.String())
+		session, authURL, err := goaccount.StartSession(form.RedirectURL)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		c.JSON(http.StatusOK, tokens)
+		c.JSON(http.StatusAccepted, gin.H{
+			"session":  session,
+			"auth_url": authURL,
+		})
 	})
 
-	g.POST("/login", func(c *gin.Context) {
-		form := new(auth.LoginForm)
+	g.POST("/session", func(c *gin.Context) {
+		form := new(SessionForm)
 		if err := c.ShouldBindJSON(form); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		u, err := models.GetUserByEmail(form.Email)
+		token, err := goaccount.GetSessionToken(form.Code)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		if err := auth.CheckPasswordHash(form.Password, *u.Password); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "email/password mismatch"})
-			return
-		}
+		var (
+			connect *models.OauthConnect
+			user    = new(models.User)
+			ctx     = c.MustGet("ctx").(context.Context)
+		)
 
-		tokens, err := auth.GenerateFullTokens(u.ID.String())
+		goaccountUser, err := token.GetUserProfile(user)
+		user = models.GetTransformedUser(ctx, goaccountUser)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.JSON(http.StatusOK, tokens)
-	})
+		if connect, err = models.GetOauthConnectByMUI(user.ID.String(), models.OauthConnectedProvidersSociousID); err != nil {
+			connect = &models.OauthConnect{
+				Provider:       models.OauthConnectedProvidersSociousID,
+				AccessToken:    token.AccessToken,
+				RefreshToken:   &token.RefreshToken,
+				MatrixUniqueID: user.ID.String(),
+				IdentityId:     user.ID,
+			}
+		}
 
-	g.GET("/sso/login", func(c *gin.Context) {
-		redirect_url := c.Query("redirect_url")
+		if err := user.Upsert(ctx); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
-		_, entrypoint, err := goaccount.StartSession(redirect_url)
+		orgs, err := token.GetMyOrganizations()
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
-		c.Redirect(http.StatusTemporaryRedirect, entrypoint)
-	})
-
-	g.POST("/sso/token", func(c *gin.Context) {
-
-		code, status := c.Query("code"), c.Query("status")
-		ctx, _ := c.Get("ctx")
-
-		if status != "success" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "authentication status is not success"})
-			return
-		}
-
-		//Get the token from Socious ID
-		sessionToken, err := goaccount.GetSessionToken(code)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		//Get User's information from Socious ID
-		sessionUser := new(models.User)
-		err = sessionToken.GetUserProfile(&sessionUser)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		user, err := models.GetUserByEmail(sessionUser.Email)
-		if err != nil {
-			//Try to create user if doesn't exist
-			user := new(models.User)
-			utils.Copy(sessionUser, user)
-			err = user.Create(ctx.(context.Context))
+		for _, o := range orgs {
+			org, err := models.GetTransformedOrganization(ctx, o)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-		}
 
-		//Create token for front end to communicate with this platform
-		tokens, err := auth.GenerateFullTokens(user.ID.String())
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		oauthConnect, err := models.GetOauthConnectByEmail(user.Email, models.OauthConnectedProvidersSociousId)
-
-		if err != nil && oauthConnect == nil {
-			oauthConnect = &models.OauthConnect{
-				AccessToken:    sessionToken.AccessToken,
-				RefreshToken:   &sessionToken.RefreshToken,
-				MatrixUniqueId: tokens["access_token"].(string),
-				Provider:       models.OauthConnectedProvidersSociousId,
-				IdentityId:     user.ID,
+			if err := org.Create(ctx, user.ID); err != nil {
+				log.Println(err.Error(), o)
 			}
-			err = oauthConnect.Create(ctx.(context.Context))
-		} else if oauthConnect != nil {
-			oauthConnect.MatrixUniqueId = tokens["access_token"].(string)
-			oauthConnect.AccessToken = sessionToken.AccessToken
-			oauthConnect.RefreshToken = &sessionToken.RefreshToken
-			err = oauthConnect.Update(ctx.(context.Context))
 		}
 
+		if err := connect.Upsert(ctx); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		jwt, err := goauth.GenerateFullTokens(user.ID.String())
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		c.JSON(http.StatusOK, tokens)
-		return
-
+		c.JSON(http.StatusAccepted, jwt)
 	})
 
+	g.POST("/refresh", func(c *gin.Context) {
+		form := new(RefreshForm)
+		if err := c.Bind(form); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		claims, err := goauth.VerifyToken(form.RefreshToken)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		jwt, err := goauth.GenerateFullTokens(claims.ID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusAccepted, jwt)
+	})
 }

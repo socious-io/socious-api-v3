@@ -17,7 +17,7 @@ type OauthConnect struct {
 	AccessToken    string                  `db:"access_token" json:"access_token"`
 	RefreshToken   *string                 `db:"refresh_token" json:"refresh_token"`
 	Meta           *types.JSONText         `db:"meta" json:"meta"`
-	Status         UserStatus              `db:"status" json:"status"` //?TODO: What the hell is this?
+	Status         UserStatus              `db:"status" json:"status"`
 	ExpiredAt      *time.Time              `db:"expired_at" json:"expired_at"`
 	CreatedAt      time.Time               `db:"created_at" json:"created_at"`
 	UpdatedAt      time.Time               `db:"updated_at" json:"updated_at"`
@@ -39,14 +39,6 @@ func GetOauthConnectByIdentityId(identityId uuid.UUID, provider OauthConnectedPr
 	return oc, nil
 }
 
-func GetOauthConnectByEmail(email string, provider OauthConnectedProviders) (*OauthConnect, error) {
-	oc := new(OauthConnect)
-	if err := database.Get(oc, "oauth_connects/get_by_email", email, provider); err != nil {
-		return nil, err
-	}
-	return oc, nil
-}
-
 func GetOauthConnectByMUI(mui string, provider OauthConnectedProviders) (*OauthConnect, error) {
 	oc := new(OauthConnect)
 	if err := database.Get(oc, "oauth_connects/get_by_mui", mui, provider); err != nil {
@@ -56,7 +48,7 @@ func GetOauthConnectByMUI(mui string, provider OauthConnectedProviders) (*OauthC
 }
 
 func (oc *OauthConnect) Create(ctx context.Context) error {
-	rows, err := database.Query(ctx, "oauth_connects/create", oc.IdentityId, oc.Provider, oc.MatrixUniqueId, oc.AccessToken, oc.RefreshToken)
+	rows, err := database.Query(ctx, "oauth_connects/create", oc.IdentityId, oc.Provider, oc.MatrixUniqueID, oc.AccessToken, oc.RefreshToken)
 	if err != nil {
 		return err
 	}
@@ -70,7 +62,7 @@ func (oc *OauthConnect) Create(ctx context.Context) error {
 }
 
 func (oc *OauthConnect) Update(ctx context.Context) error {
-	rows, err := database.Query(ctx, "oauth_connects/update", oc.ID, oc.MatrixUniqueId, oc.AccessToken, oc.RefreshToken)
+	rows, err := database.Query(ctx, "oauth_connects/update", oc.ID, oc.MatrixUniqueID, oc.AccessToken, oc.RefreshToken)
 	if err != nil {
 		return err
 	}

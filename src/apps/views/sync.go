@@ -13,13 +13,14 @@ func syncGroup(router *gin.Engine) {
 	g.Use(AccountCenterRequired())
 
 	g.PUT("", func(c *gin.Context) {
-		form := new(SyncForm)
+		ctx := c.MustGet("ctx").(context.Context)
 
+		form := new(SyncForm)
 		if err := c.ShouldBindJSON(form); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		ctx := c.MustGet("ctx").(context.Context)
+
 		if err := form.User.Upsert(ctx); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

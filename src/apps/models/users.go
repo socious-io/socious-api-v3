@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"socious/src/apps/utils"
+
 	"github.com/jmoiron/sqlx/types"
 	"github.com/lib/pq"
 	"github.com/socious-io/goaccount"
@@ -74,6 +76,29 @@ func (User) TableName() string {
 
 func (User) FetchQuery() string {
 	return "users/fetch"
+}
+
+func GetTransformedUser(ctx context.Context, user *goaccount.User) *User {
+	u := new(User)
+	utils.Copy(user, u)
+
+	if user.IdentityVerifiedAt != nil {
+		u.IdentityVerified = true
+	}
+
+	if user.Avatar != nil {
+		avatar := new(Media)
+		utils.Copy(user.Avatar, avatar)
+		avatar.Upsert(ctx)
+	}
+
+	if user.Cover != nil {
+		cover := new(Media)
+		utils.Copy(user.Cover, cover)
+		cover.Upsert(ctx)
+	}
+
+	return u
 }
 
 func (u *User) Create(ctx context.Context) error {
@@ -148,22 +173,25 @@ func (u *User) UpdatePassword(ctx context.Context) error {
 	return nil
 }
 
-func (u *User) UpdateProfile(ctx context.Context, oauthSession *goaccount.SessionToken) error {
-
-	id := u.ID
-	if oauthSession != nil {
-		//update profile
-		err := oauthSession.UpdateUserProfile(u)
-		if err != nil {
-			return err
-		}
-		u.ID = id
+func (u *User) Upsert(ctx context.Context) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
 	}
-
+	if u.Avatar != nil {
+		b, _ := json.Marshal(u.Avatar)
+		u.AvatarJson.Scan(b)
+	}
+	if u.Cover != nil {
+		b, _ := json.Marshal(u.Cover)
+		u.CoverJson.Scan(b)
+	}
 	rows, err := database.Query(
 		ctx,
-		"users/update",
-		u.ID, u.FirstName, u.LastName, u.Bio, u.Phone, u.Username,
+		"users/upsert",
+		u.ID,
+		u.FirstName, u.LastName, u.Username, u.Email,
+		u.City, u.Country, u.AvatarJson, u.CoverJson,
+		u.Language, u.ImpactPoints, u.IdentityVerified,
 	)
 	if err != nil {
 		return err
@@ -207,36 +235,4 @@ func GetUserByUsername(username string) (*User, error) {
 		return nil, err
 	}
 	return u, nil
-}
-
-func (u *User) Upsert(ctx context.Context) error {
-	if u.ID == uuid.Nil {
-		u.ID = uuid.New()
-	}
-	if u.Avatar != nil {
-		b, _ := json.Marshal(u.Avatar)
-		u.AvatarJson.Scan(b)
-	}
-	if u.Cover != nil {
-		b, _ := json.Marshal(u.Cover)
-		u.CoverJson.Scan(b)
-	}
-	rows, err := database.Query(
-		ctx,
-		"users/upsert",
-		u.ID,
-		u.FirstName, u.LastName, u.Username, u.Email,
-		u.City, u.Country, u.AvatarJson, u.CoverJson,
-		u.Language, u.ImpactPoints, u.IdentityVerifiedAt,
-	)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		if err := rows.StructScan(u); err != nil {
-			return err
-		}
-	}
-	return nil
 }

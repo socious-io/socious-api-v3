@@ -2,7 +2,6 @@ package views
 
 import (
 	"net/http"
-	"socious/src/apps/auth"
 
 	"socious/src/apps/models"
 
@@ -12,7 +11,7 @@ import (
 
 func organizationsGroup(router *gin.Engine) {
 	g := router.Group("organizations")
-	g.Use(auth.LoginRequired())
+	g.Use(LoginRequired())
 
 	g.GET("", func(c *gin.Context) {
 		u := c.MustGet("user").(*models.User)

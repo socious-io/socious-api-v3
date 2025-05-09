@@ -1,54 +1,62 @@
 package models
 
 import (
+	"context"
+	"socious/src/apps/utils"
 	"time"
 
+	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
 )
 
 type Organization struct {
-	ID                uuid.UUID  `db:"id" json:"id"`
-	Name              *string    `db:"name" json:"name"`
-	Bio               *string    `db:"bio" json:"bio"`
-	Description       *string    `db:"description" json:"description"`
-	Email             *string    `db:"email" json:"email"`
-	Phone             *string    `db:"phone" json:"phone"`
-	City              *string    `db:"city" json:"city"`
-	Type              string     `db:"type" json:"type"` //type -> organization_type DEFAULT 'OTHER'
-	Address           *string    `db:"address" json:"address"`
-	Website           *string    `db:"website" json:"website"`
-	SocialCauses      []string   `db:"social_causes" json:"social_causes"` //type -> social_causes_type[]
-	Followers         int        `db:"followers" json:"followers"`
-	Followings        int        `db:"followings" json:"followings"`
-	Country           *string    `db:"country" json:"country"`
-	WalletAddress     *string    `db:"wallet_address" json:"wallet_address"`
-	ImpactPoints      float64    `db:"impact_points" json:"impact_points"`
-	Mission           *string    `db:"mission" json:"mission"`
-	Culture           *string    `db:"culture" json:"culture"`
-	Image             *uuid.UUID `db:"image" json:"image"`
-	CoverImage        *uuid.UUID `db:"cover_image" json:"cover_image"`
-	MobileCountryCode *string    `db:"mobile_country_code" json:"mobile_country_code"`
-	CreatedBy         *uuid.UUID `db:"created_by" json:"created_by"`
-	Shortname         string     `db:"shortname" json:"shortname"`
-	// OldId *int `db:"old_id" json:"old_id"`
-	Status string `db:"status" json:"status"` //type -> org_status DEFAULT 'ACTIVE'
-	// SearchTsv tsvector `db:"search_tsv" json:"search_tsv"`
-	OtherPartyId    *string `db:"other_party_id" json:"other_party_id"`
-	OtherPartyTitle *string `db:"other_party_title" json:"other_party_title"`
-	OtherPartyUrl   *string `db:"other_party_url" json:"other_party_url"`
-	GeonameId       *int    `db:"geoname_id" json:"geoname_id"`
-	VerifiedImpact  bool    `db:"verified_impact" json:"verified_impact"`
-	Hiring          bool    `db:"hiring" json:"hiring"`
-	Size            *string `db:"size" json:"size"`
-	Industry        *string `db:"industry" json:"industry"`
-	Did             *string `db:"did" json:"did"`
-	Verified        bool    `db:"verified" json:"verified"`
-	ImpactDetected  bool    `db:"impact_detected" json:"impact_detected"`
+	ID                uuid.UUID          `db:"id" json:"id"`
+	Name              *string            `db:"name" json:"name"`
+	Bio               *string            `db:"bio" json:"bio"`
+	Description       *string            `db:"description" json:"description"`
+	Email             *string            `db:"email" json:"email"`
+	Phone             *string            `db:"phone" json:"phone"`
+	City              *string            `db:"city" json:"city"`
+	Type              string             `db:"type" json:"type"` //type -> organization_type DEFAULT 'OTHER'
+	Address           *string            `db:"address" json:"address"`
+	Website           *string            `db:"website" json:"website"`
+	SocialCauses      []string           `db:"social_causes" json:"social_causes"` //type -> social_causes_type[]
+	Followers         int                `db:"followers" json:"followers"`
+	Followings        int                `db:"followings" json:"followings"`
+	Country           *string            `db:"country" json:"country"`
+	WalletAddress     *string            `db:"wallet_address" json:"wallet_address"`
+	ImpactPoints      float64            `db:"impact_points" json:"impact_points"`
+	Mission           *string            `db:"mission" json:"mission"`
+	Culture           *string            `db:"culture" json:"culture"`
+	Image             *uuid.UUID         `db:"image" json:"image"`
+	CoverImage        *uuid.UUID         `db:"cover_image" json:"cover_image"`
+	MobileCountryCode *string            `db:"mobile_country_code" json:"mobile_country_code"`
+	CreatedBy         *uuid.UUID         `db:"created_by" json:"created_by"`
+	Shortname         string             `db:"shortname" json:"shortname"`
+	Status            OrganizationStatus `db:"status" json:"status"`
+	OtherPartyId      *string            `db:"other_party_id" json:"other_party_id"`
+	OtherPartyTitle   *string            `db:"other_party_title" json:"other_party_title"`
+	OtherPartyUrl     *string            `db:"other_party_url" json:"other_party_url"`
+	GeonameId         *int               `db:"geoname_id" json:"geoname_id"`
+	VerifiedImpact    bool               `db:"verified_impact" json:"verified_impact"`
+	Hiring            bool               `db:"hiring" json:"hiring"`
+	Size              *string            `db:"size" json:"size"`
+	Industry          *string            `db:"industry" json:"industry"`
+	Did               *string            `db:"did" json:"did"`
+	Verified          bool               `db:"verified" json:"verified"`
+	ImpactDetected    bool               `db:"impact_detected" json:"impact_detected"`
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type OrganizationMember struct {
+	ID             uuid.UUID `db:"id" json:"id"`
+	OrganizationID uuid.UUID `db:"organization_id" json:"organization_id"`
+	UserID         uuid.UUID `db:"user_id" json:"user_id"`
+	CreatedAt      time.Time `db:"created_at" json:"created_at"`
 }
 
 func (Organization) TableName() string {
@@ -59,32 +67,161 @@ func (Organization) FetchQuery() string {
 	return "organizations/fetch"
 }
 
-func (*Organization) Create() error {
-	return nil
+func GetTransformedOrganization(ctx context.Context, org goaccount.Organization) (*Organization, error) {
+	o := new(Organization)
+	utils.Copy(org, o)
+
+	if o.ID == uuid.Nil {
+		newID, err := uuid.NewUUID()
+		if err != nil {
+			return nil, err
+		}
+		o.ID = newID
+	}
+
+	if org.Verified || org.VerifiedImpact {
+		o.Status = OrganizationStatusActive
+	} else {
+		o.Status = OrganizationStatusNotActive
+	}
+
+	if org.Logo != nil {
+		logo := new(Media)
+		utils.Copy(org.Logo, logo)
+		logo.Upsert(ctx)
+		o.Image = &logo.ID
+	}
+
+	if org.Cover != nil {
+		cover := new(Media)
+		utils.Copy(org.Cover, cover)
+		cover.Upsert(ctx)
+		o.CoverImage = &cover.ID
+	}
+
+	return o, nil
 }
 
-// func (*Organization) Update() error {
-// 	id := u.ID
-// 	if oauthSession != nil {
-// 		//update profile
-// 		err := oauthSession.UpdateUserProfile(u)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		u.ID = id
-// 	}
-// }
-
-func (*Organization) Remove() error {
-	return nil
+func (om *OrganizationMember) Create(ctx context.Context) error {
+	_, err := database.Query(ctx, "organizations/create_member", om.OrganizationID, om.UserID)
+	return err
 }
 
-func (*Organization) UpdateDID() error {
-	return nil
+func (o *Organization) Create(ctx context.Context, userID uuid.UUID) error {
+
+	tx, err := database.GetDB().Beginx()
+	if err != nil {
+		return err
+	}
+
+	rows, err := database.TxQuery(
+		ctx,
+		tx,
+		"organizations/create",
+		o.ID,
+		o.Name,
+		o.Bio,
+		o.Description,
+		o.Email,
+		o.Phone,
+		o.City,
+		o.Type,
+		o.Address,
+		o.Website,
+		o.SocialCauses,
+		o.Country,
+		o.ImpactPoints,
+		o.Mission,
+		o.Culture,
+		o.Image,
+		o.CoverImage,
+		o.MobileCountryCode,
+		o.Shortname,
+		o.Status,
+		o.GeonameId,
+		o.VerifiedImpact,
+		o.Size,
+		o.Industry,
+		o.Did,
+		o.Verified,
+		o.ImpactDetected,
+		o.CreatedAt,
+		o.UpdatedAt,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		if err := rows.StructScan(o); err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if _, err := database.TxQuery(
+		ctx,
+		tx,
+		"organizations/add_member",
+		o.ID,
+		userID,
+	); err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return database.Fetch(o, o.ID)
 }
 
-func (*Organization) ToggleHiring() error {
-	return nil
+func (o *Organization) Update(ctx context.Context) error {
+	rows, err := database.Query(
+		ctx,
+		"organizations/update",
+		o.ID,
+		o.Name,
+		o.Bio,
+		o.Description,
+		o.Email,
+		o.Phone,
+		o.City,
+		o.Type,
+		o.Address,
+		o.Website,
+		o.SocialCauses,
+		o.Country,
+		o.ImpactPoints,
+		o.Mission,
+		o.Culture,
+		o.Image,
+		o.CoverImage,
+		o.MobileCountryCode,
+		o.Shortname,
+		o.Status,
+		o.GeonameId,
+		o.VerifiedImpact,
+		o.Size,
+		o.Industry,
+		o.Did,
+		o.Verified,
+		o.ImpactDetected,
+		o.CreatedAt,
+		o.UpdatedAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.StructScan(o); err != nil {
+			return err
+		}
+	}
+	return database.Fetch(o, o.ID)
 }
 
 func GetOrganization(id uuid.UUID) (*Organization, error) {
@@ -101,6 +238,14 @@ func GetOrganizationByShortname(shortname string, identity uuid.UUID) (*Organiza
 		return nil, err
 	}
 	return o, nil
+}
+
+func Member(orgID, userID uuid.UUID) (*OrganizationMember, error) {
+	om := new(OrganizationMember)
+	if err := database.Get(om, "organizations/get_member", orgID, userID); err != nil {
+		return nil, err
+	}
+	return om, nil
 }
 
 func GetUserOrganizations(userId uuid.UUID) ([]Organization, error) {
