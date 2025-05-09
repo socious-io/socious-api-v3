@@ -2,9 +2,14 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
+	"socious/src/apps/utils"
+
+	"github.com/jmoiron/sqlx/types"
 	"github.com/lib/pq"
+	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/google/uuid"
@@ -29,7 +34,6 @@ type User struct {
 	Mission             *string        `db:"mission" json:"mission"`
 	Bio                 *string        `db:"bio" json:"-"`
 	ViewAs              *int           `db:"view_as" json:"view_as"`
-	JobTitle            *string        `db:"job_title" json:"job_title"`
 	AvatarID            *uuid.UUID     `db:"avatar_id" json:"avatar_id"`
 	PasswordExpired     bool           `db:"password_expired" json:"password_expired"`
 	Language            *string        `db:"language" json:"language"`
@@ -38,8 +42,10 @@ type User struct {
 	SocialCauses        pq.StringArray `db:"social_causes" json:"social_causes"` // social_causes_type[] as typ
 	Followers           int            `db:"followers" json:"followers"`
 	Followings          int            `db:"followings" json:"followings"`
-	Avatar              *uuid.UUID     `db:"avatar" json:"avatar"`
-	CoverImage          *uuid.UUID     `db:"cover_image" json:"cover_image"`
+	Avatar              *Media         `db:"-" json:"avatar"`
+	AvatarJson          types.JSONText `db:"avatar" json:"-"`
+	Cover               *Media         `db:"-" json:"cover"`
+	CoverJson           types.JSONText `db:"cover" json:"-"`
 	Skills              pq.StringArray `db:"skills" json:"skills"`
 	Country             *string        `db:"country" json:"country"`
 	MobileCountryCode   *string        `db:"mobile_country_code" json:"mobile_country_code"`
@@ -70,6 +76,29 @@ func (User) TableName() string {
 
 func (User) FetchQuery() string {
 	return "users/fetch"
+}
+
+func GetTransformedUser(ctx context.Context, user *goaccount.User) *User {
+	u := new(User)
+	utils.Copy(user, u)
+
+	if user.IdentityVerifiedAt != nil {
+		u.IdentityVerified = true
+	}
+
+	if user.Avatar != nil {
+		avatar := new(Media)
+		utils.Copy(user.Avatar, avatar)
+		avatar.Upsert(ctx)
+	}
+
+	if user.Cover != nil {
+		cover := new(Media)
+		utils.Copy(user.Cover, cover)
+		cover.Upsert(ctx)
+	}
+
+	return u
 }
 
 func (u *User) Create(ctx context.Context) error {
@@ -144,11 +173,25 @@ func (u *User) UpdatePassword(ctx context.Context) error {
 	return nil
 }
 
-func (u *User) UpdateProfile(ctx context.Context) error {
+func (u *User) Upsert(ctx context.Context) error {
+	if u.ID == uuid.Nil {
+		u.ID = uuid.New()
+	}
+	if u.Avatar != nil {
+		b, _ := json.Marshal(u.Avatar)
+		u.AvatarJson.Scan(b)
+	}
+	if u.Cover != nil {
+		b, _ := json.Marshal(u.Cover)
+		u.CoverJson.Scan(b)
+	}
 	rows, err := database.Query(
 		ctx,
-		"users/update_profile",
-		u.ID, u.FirstName, u.LastName, u.Bio, u.JobTitle, u.Phone, u.Username,
+		"users/upsert",
+		u.ID,
+		u.FirstName, u.LastName, u.Username, u.Email,
+		u.City, u.Country, u.AvatarJson, u.CoverJson,
+		u.Language, u.ImpactPoints, u.IdentityVerified,
 	)
 	if err != nil {
 		return err

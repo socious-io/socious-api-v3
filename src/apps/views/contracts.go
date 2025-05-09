@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"socious/src/apps/auth"
 	"socious/src/apps/lib"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
@@ -18,7 +17,7 @@ import (
 
 func contractsGroup(router *gin.Engine) {
 	g := router.Group("contracts")
-	g.Use(auth.LoginRequired())
+	g.Use(LoginRequired())
 
 	g.GET("", paginate(), func(c *gin.Context) {
 		identity := c.MustGet("identity").(*models.Identity)
@@ -305,7 +304,7 @@ func contractsGroup(router *gin.Engine) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Couldn't find corresponding Stripe account"})
 				return
 			}
-			destinationAccount = oauthConnect.MatrixUniqueId
+			destinationAccount = oauthConnect.MatrixUniqueID
 
 			payment.SetToFiatMode(string(oauthConnect.Provider))
 		} else {

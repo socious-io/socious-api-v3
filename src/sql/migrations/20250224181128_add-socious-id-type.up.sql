@@ -1,0 +1,1 @@
+ALTER TYPE oauth_connected_providers ADD VALUE 'SOCIOUS_ID';

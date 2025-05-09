@@ -3,7 +3,6 @@ package views
 import (
 	"context"
 	"net/http"
-	"socious/src/apps/auth"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
 
@@ -14,7 +13,7 @@ import (
 
 func projectsGroup(router *gin.Engine) {
 	g := router.Group("projects")
-	g.Use(auth.LoginRequired())
+	g.Use(LoginRequired())
 
 	g.GET("", paginate(), func(c *gin.Context) {
 		identity, _ := c.Get("identity")
