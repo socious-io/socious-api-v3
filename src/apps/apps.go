@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"socious/src/apps/utils"
 	"socious/src/apps/views"
 	"socious/src/config"
 	"time"
@@ -22,18 +21,6 @@ func Init() *gin.Engine {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
 		defer cancel()
 		c.Set("ctx", ctx)
-		c.Next()
-	})
-
-	//Uploader
-	uploader := &utils.GCSUploader{
-		CDNUrl:          config.Config.Upload.CDN,
-		BucketName:      config.Config.Upload.Bucket,
-		CredentialsFile: config.Config.Upload.Credentials,
-	}
-
-	router.Use(func(c *gin.Context) {
-		c.Set("uploader", uploader)
 		c.Next()
 	})
 

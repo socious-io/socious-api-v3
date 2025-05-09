@@ -11,15 +11,10 @@ import (
 var Config *ConfigType
 
 type ConfigType struct {
-	Env    string `mapstructure:"env"`
-	Port   int    `mapstructure:"port"`
-	Debug  bool   `mapstructure:"debug"`
-	Secret string `mapstructure:"secret"`
-	SSO    struct {
-		Host   string `mapstructure:"host"`
-		ID     string `mapstructure:"id"`
-		Secret string `mapstructure:"secret"`
-	} `mapstructure:"sso"`
+	Env      string `mapstructure:"env"`
+	Port     int    `mapstructure:"port"`
+	Debug    bool   `mapstructure:"debug"`
+	Secret   string `mapstructure:"secret"`
 	Host     string `mapstructure:"host"`
 	Database struct {
 		URL        string `mapstructure:"url"`
@@ -40,15 +35,11 @@ type ConfigType struct {
 		Url   string `mapstructure:"url"`
 		Token string `mapstructure:"token"`
 	} `mapstructure:"nats"`
+
 	Payment struct {
 		Chains gopay.Chains `mapstructure:"chains"`
 		Fiats  gopay.Fiats  `mapstructure:"fiats"`
 	} `mapstructure:"payment"`
-	Upload struct {
-		Bucket      string `mapstructure:"bucket"`
-		CDN         string `mapstructure:"cdn"`
-		Credentials string `mapstructure:"credentials"`
-	} `mapstructure:"upload"`
 	GoAccounts goaccount.Config `mapstructure:"goaccounts"`
 }
 
