@@ -146,6 +146,7 @@ func setupTestEnvironment() (*sqlx.DB, *gin.Engine) {
 	}); err != nil {
 		log.Fatalf("gopay error %v", err)
 	}
+	goaccount.Setup(config.Config.GoAccounts)
 
 	log.Println("Migrations applied successfully!")
 	router := apps.Init()

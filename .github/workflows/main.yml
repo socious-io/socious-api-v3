@@ -80,6 +80,13 @@ jobs:
           cors:
             origins:
               - '*'
+          goaccounts:
+            host: host
+            id: id
+            secret: secret
+            jwt:
+              secret: this-is-secret
+              duration: 24
           EOF
           cat test.config.yml
 
