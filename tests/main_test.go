@@ -1,6 +1,7 @@
 package tests_test
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/socious-io/goauth"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 
@@ -38,17 +40,16 @@ var (
 var _ = BeforeSuite(func() {
 	db, router = setupTestEnvironment()
 
-	// ctx := context.Background()
-	// now := time.Now()
-	// for _, u := range usersData {
-	// 	u.IdentityVerifiedAt = &now
-	// 	err := u.Upsert(ctx)
-	// 	if err != nil {
-	// 		continue
-	// 	}
-	// 	token, _ := goauth.GenerateToken(u.ID.String(), false)
-	// 	authTokens = append(authTokens, token)
-	// }
+	ctx := context.Background()
+	for _, u := range usersData {
+		u.IdentityVerified = true
+		err := u.Upsert(ctx)
+		if err != nil {
+			continue
+		}
+		token, _ := goauth.GenerateToken(u.ID.String(), false)
+		authTokens = append(authTokens, token)
+	}
 })
 
 // Drop the database after all tests have run

@@ -52,7 +52,7 @@ func (m *Media) Upsert(ctx context.Context) error {
 	rows, err := database.Query(
 		ctx,
 		"media/upsert",
-		m.IdentityID, m.URL, m.Filename,
+		m.ID, m.IdentityID, m.URL, m.Filename,
 	)
 	if err != nil {
 		return err

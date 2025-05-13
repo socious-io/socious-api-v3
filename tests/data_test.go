@@ -1,6 +1,8 @@
 package tests_test
 
 import (
+	"socious/src/apps/models"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -8,20 +10,14 @@ var (
 	authTokens        = []string{}
 	authRefreshTokens = []string{}
 
-	usersData = []gin.H{
+	usersData = []*models.User{
 		{
-			"first_name": "TestName",
-			"last_name":  "TestLastName",
-			"username":   "test",
-			"email":      "test@test.com",
-			"password":   "test123456",
+			Username: "test",
+			Email:    "test@test.com",
 		},
 		{
-			"first_name": "TestName2",
-			"last_name":  "TestLastName2",
-			"username":   "test2",
-			"email":      "test2@test.com",
-			"password":   "test123456",
+			Username: "test2",
+			Email:    "test2@test.com",
 		},
 	}
 
