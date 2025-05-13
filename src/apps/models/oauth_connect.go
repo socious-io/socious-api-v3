@@ -47,34 +47,6 @@ func GetOauthConnectByMUI(mui string, provider OauthConnectedProviders) (*OauthC
 	return oc, nil
 }
 
-func (oc *OauthConnect) Create(ctx context.Context) error {
-	rows, err := database.Query(ctx, "oauth_connects/create", oc.IdentityId, oc.Provider, oc.MatrixUniqueID, oc.AccessToken, oc.RefreshToken)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		if err := rows.StructScan(oc); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (oc *OauthConnect) Update(ctx context.Context) error {
-	rows, err := database.Query(ctx, "oauth_connects/update", oc.ID, oc.MatrixUniqueID, oc.AccessToken, oc.RefreshToken)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		if err := rows.StructScan(oc); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func (oc *OauthConnect) Upsert(ctx context.Context) error {
 	rows, err := database.Query(
 		ctx, "oauth_connects/upsert",
@@ -86,20 +58,6 @@ func (oc *OauthConnect) Upsert(ctx context.Context) error {
 		oc.Meta,
 		oc.ExpiredAt,
 	)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		if err := rows.StructScan(oc); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (oc *OauthConnect) UpdateStatus(ctx context.Context, Status UserStatus) error {
-	rows, err := database.Query(ctx, "oauth_connects/update_status", oc.ID, Status)
 	if err != nil {
 		return err
 	}
