@@ -1,9 +1,10 @@
 package tests_test
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 var (
-	intKey            = ""
 	authTokens        = []string{}
 	authRefreshTokens = []string{}
 

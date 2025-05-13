@@ -27,7 +27,7 @@ func syncGroup(router *gin.Engine) {
 		}
 
 		for _, o := range form.Organizations {
-			if err := o.Create(ctx, form.User.ID); err != nil {
+			if err := o.Upsert(ctx, form.User.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
 		}

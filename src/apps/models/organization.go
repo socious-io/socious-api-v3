@@ -5,6 +5,7 @@ import (
 	"socious/src/apps/utils"
 	"time"
 
+	"github.com/jmoiron/sqlx/types"
 	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
@@ -30,8 +31,6 @@ type Organization struct {
 	ImpactPoints      float64            `db:"impact_points" json:"impact_points"`
 	Mission           *string            `db:"mission" json:"mission"`
 	Culture           *string            `db:"culture" json:"culture"`
-	Image             *uuid.UUID         `db:"image" json:"image"`
-	CoverImage        *uuid.UUID         `db:"cover_image" json:"cover_image"`
 	MobileCountryCode *string            `db:"mobile_country_code" json:"mobile_country_code"`
 	CreatedBy         *uuid.UUID         `db:"created_by" json:"created_by"`
 	Shortname         string             `db:"shortname" json:"shortname"`
@@ -47,6 +46,14 @@ type Organization struct {
 	Did               *string            `db:"did" json:"did"`
 	Verified          bool               `db:"verified" json:"verified"`
 	ImpactDetected    bool               `db:"impact_detected" json:"impact_detected"`
+
+	LogoID   *uuid.UUID      `db:"image" json:"image"`
+	Logo     *Media          `db:"-" json:"logo"`
+	LogoJson *types.JSONText `db:"logo" json:"-"`
+
+	CoverID   *uuid.UUID      `db:"cover_image" json:"cover_image"`
+	Cover     *Media          `db:"-" json:"cover"`
+	CoverJson *types.JSONText `db:"cover" json:"-"`
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
@@ -82,21 +89,21 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization)
 	if org.Verified || org.VerifiedImpact {
 		o.Status = OrganizationStatusActive
 	} else {
-		o.Status = OrganizationStatusNotActive
+		o.Status = OrganizationStatusInactive
 	}
 
 	if org.Logo != nil {
 		logo := new(Media)
 		utils.Copy(org.Logo, logo)
 		logo.Upsert(ctx)
-		o.Image = &logo.ID
+		o.LogoID = &logo.ID
 	}
 
 	if org.Cover != nil {
 		cover := new(Media)
 		utils.Copy(org.Cover, cover)
 		cover.Upsert(ctx)
-		o.CoverImage = &cover.ID
+		o.CoverID = &cover.ID
 	}
 
 	return o, nil
@@ -107,7 +114,7 @@ func (om *OrganizationMember) Create(ctx context.Context) error {
 	return err
 }
 
-func (o *Organization) Create(ctx context.Context, userID uuid.UUID) error {
+func (o *Organization) Upsert(ctx context.Context, userID uuid.UUID) error {
 
 	tx, err := database.GetDB().Beginx()
 	if err != nil {
@@ -117,36 +124,25 @@ func (o *Organization) Create(ctx context.Context, userID uuid.UUID) error {
 	rows, err := database.TxQuery(
 		ctx,
 		tx,
-		"organizations/create",
+		"organizations/upsert",
 		o.ID,
+		o.Shortname,
 		o.Name,
 		o.Bio,
 		o.Description,
 		o.Email,
 		o.Phone,
 		o.City,
-		o.Type,
+		o.Country,
 		o.Address,
 		o.Website,
-		o.SocialCauses,
-		o.Country,
-		o.ImpactPoints,
 		o.Mission,
 		o.Culture,
-		o.Image,
-		o.CoverImage,
-		o.MobileCountryCode,
-		o.Shortname,
 		o.Status,
-		o.GeonameId,
 		o.VerifiedImpact,
-		o.Size,
-		o.Industry,
-		o.Did,
 		o.Verified,
-		o.ImpactDetected,
-		o.CreatedAt,
-		o.UpdatedAt,
+		o.LogoID,
+		o.CoverID,
 	)
 	if err != nil {
 		tx.Rollback()
@@ -173,53 +169,6 @@ func (o *Organization) Create(ctx context.Context, userID uuid.UUID) error {
 	}
 	if err := tx.Commit(); err != nil {
 		return err
-	}
-	return database.Fetch(o, o.ID)
-}
-
-func (o *Organization) Update(ctx context.Context) error {
-	rows, err := database.Query(
-		ctx,
-		"organizations/update",
-		o.ID,
-		o.Name,
-		o.Bio,
-		o.Description,
-		o.Email,
-		o.Phone,
-		o.City,
-		o.Type,
-		o.Address,
-		o.Website,
-		o.SocialCauses,
-		o.Country,
-		o.ImpactPoints,
-		o.Mission,
-		o.Culture,
-		o.Image,
-		o.CoverImage,
-		o.MobileCountryCode,
-		o.Shortname,
-		o.Status,
-		o.GeonameId,
-		o.VerifiedImpact,
-		o.Size,
-		o.Industry,
-		o.Did,
-		o.Verified,
-		o.ImpactDetected,
-		o.CreatedAt,
-		o.UpdatedAt,
-	)
-	if err != nil {
-		return err
-	}
-
-	defer rows.Close()
-	for rows.Next() {
-		if err := rows.StructScan(o); err != nil {
-			return err
-		}
 	}
 	return database.Fetch(o, o.ID)
 }

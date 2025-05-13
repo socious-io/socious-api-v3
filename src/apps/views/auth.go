@@ -84,7 +84,7 @@ func authGroup(router *gin.Engine) {
 				return
 			}
 
-			if err := org.Create(ctx, user.ID); err != nil {
+			if err := org.Upsert(ctx, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
 		}

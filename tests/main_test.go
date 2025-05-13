@@ -37,6 +37,18 @@ var (
 // Setup the test environment before any tests run
 var _ = BeforeSuite(func() {
 	db, router = setupTestEnvironment()
+
+	// ctx := context.Background()
+	// now := time.Now()
+	// for _, u := range usersData {
+	// 	u.IdentityVerifiedAt = &now
+	// 	err := u.Upsert(ctx)
+	// 	if err != nil {
+	// 		continue
+	// 	}
+	// 	token, _ := goauth.GenerateToken(u.ID.String(), false)
+	// 	authTokens = append(authTokens, token)
+	// }
 })
 
 // Drop the database after all tests have run

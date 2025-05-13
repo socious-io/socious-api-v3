@@ -371,9 +371,9 @@ func scanEnum(value interface{}, target interface{}) error {
 type OrganizationStatus string
 
 const (
-	OrganizationStatusActive    OrganizationStatus = "ACTIVE"
-	OrganizationStatusNotActive OrganizationStatus = "NOT_ACTIVE"
-	OrganizationStatusPending   OrganizationStatus = "PENDING"
+	OrganizationStatusActive   OrganizationStatus = "ACTIVE"
+	OrganizationStatusInactive OrganizationStatus = "INACTIVE"
+	OrganizationStatusPending  OrganizationStatus = "PENDING"
 )
 
 func (os *OrganizationStatus) Scan(value interface{}) error {
