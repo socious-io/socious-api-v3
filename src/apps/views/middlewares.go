@@ -82,7 +82,7 @@ func LoginOptional() gin.HandlerFunc {
 
 		if identity.Type == models.IdentityTypeOrganizations {
 			if _, err := models.Member(identity.ID, u.ID); err != nil {
-				c.JSON(http.StatusForbidden, gin.H{"error": "Identitiy not allowed"})
+				c.JSON(http.StatusForbidden, gin.H{"error": "Identity not allowed"})
 				c.Abort()
 				return
 			}

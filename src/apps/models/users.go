@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	"socious/src/apps/utils"
@@ -63,9 +62,10 @@ type User struct {
 	Avatar     *Media         `db:"-" json:"avatar"`
 	AvatarJson types.JSONText `db:"avatar" json:"-"`
 
-	CoverID   *uuid.UUID     `db:"cover_image" json:"cover_image"`
-	Cover     *Media         `db:"-" json:"cover"`
-	CoverJson types.JSONText `db:"cover" json:"-"`
+	CoverID    *uuid.UUID     `db:"cover_id" json:"cover_id"`
+	Cover      *Media         `db:"-" json:"cover"`
+	CoverJson  types.JSONText `db:"cover" json:"-"`
+	CoverImage *uuid.UUID     `db:"cover_image" json:"-"` //FIXME: temporary: we should unify it with other platforms
 
 	EmailVerifiedAt *time.Time `db:"email_verified_at" json:"email_verified_at"`
 	PhoneVerifiedAt *time.Time `db:"phone_verified_at" json:"phone_verified_at"`
@@ -82,7 +82,7 @@ func (User) FetchQuery() string {
 	return "users/fetch"
 }
 
-func GetTransformedUser(ctx context.Context, user *goaccount.User) *User {
+func GetTransformedUser(ctx context.Context, user goaccount.User) *User {
 	u := new(User)
 	utils.Copy(user, u)
 
@@ -110,14 +110,6 @@ func GetTransformedUser(ctx context.Context, user *goaccount.User) *User {
 func (u *User) Upsert(ctx context.Context) error {
 	if u.ID == uuid.Nil {
 		u.ID = uuid.New()
-	}
-	if u.Avatar != nil {
-		b, _ := json.Marshal(u.Avatar)
-		u.AvatarJson.Scan(b)
-	}
-	if u.Cover != nil {
-		b, _ := json.Marshal(u.Cover)
-		u.CoverJson.Scan(b)
 	}
 	rows, err := database.Query(
 		ctx,

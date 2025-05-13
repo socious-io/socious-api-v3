@@ -28,4 +28,4 @@ ON CONFLICT (id) DO UPDATE SET
     verified = CASE WHEN EXCLUDED.verified THEN EXCLUDED.verified ELSE organizations.verified END,
     image=EXCLUDED.image,
     cover_image=EXCLUDED.cover_image
-RETURNING id;
+RETURNING organizations.id;

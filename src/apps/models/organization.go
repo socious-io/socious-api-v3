@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx/types"
+	"github.com/lib/pq"
 	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
@@ -23,12 +24,14 @@ type Organization struct {
 	Type              string             `db:"type" json:"type"` //type -> organization_type DEFAULT 'OTHER'
 	Address           *string            `db:"address" json:"address"`
 	Website           *string            `db:"website" json:"website"`
-	SocialCauses      []string           `db:"social_causes" json:"social_causes"` //type -> social_causes_type[]
+	SocialCauses      pq.StringArray     `db:"social_causes" json:"social_causes"`
 	Followers         int                `db:"followers" json:"followers"`
 	Followings        int                `db:"followings" json:"followings"`
 	Country           *string            `db:"country" json:"country"`
 	WalletAddress     *string            `db:"wallet_address" json:"wallet_address"`
 	ImpactPoints      float64            `db:"impact_points" json:"impact_points"`
+	OldId             *string            `db:"old_id" json:"old_id"`
+	SearchTSV         *string            `db:"search_tsv" json:"search_tsv"`
 	Mission           *string            `db:"mission" json:"mission"`
 	Culture           *string            `db:"culture" json:"culture"`
 	MobileCountryCode *string            `db:"mobile_country_code" json:"mobile_country_code"`
@@ -47,13 +50,15 @@ type Organization struct {
 	Verified          bool               `db:"verified" json:"verified"`
 	ImpactDetected    bool               `db:"impact_detected" json:"impact_detected"`
 
-	LogoID   *uuid.UUID      `db:"image" json:"image"`
+	LogoID   *uuid.UUID      `db:"logo_id" json:"logo_id"`
 	Logo     *Media          `db:"-" json:"logo"`
 	LogoJson *types.JSONText `db:"logo" json:"-"`
+	Image    *uuid.UUID      `db:"image" json:"-"` //FIXME: temporary: we should unify it with other platforms
 
-	CoverID   *uuid.UUID      `db:"cover_image" json:"cover_image"`
-	Cover     *Media          `db:"-" json:"cover"`
-	CoverJson *types.JSONText `db:"cover" json:"-"`
+	CoverID    *uuid.UUID      `db:"cover_id" json:"cover_id"`
+	Cover      *Media          `db:"-" json:"cover"`
+	CoverJson  *types.JSONText `db:"cover" json:"-"`
+	CoverImage *uuid.UUID      `db:"cover_image" json:"-"` //FIXME: temporary: we should unify it with other platforms
 
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
@@ -74,15 +79,12 @@ func (Organization) FetchQuery() string {
 	return "organizations/fetch"
 }
 
-func GetTransformedOrganization(ctx context.Context, org goaccount.Organization) (*Organization, error) {
+func GetTransformedOrganization(ctx context.Context, org goaccount.Organization) *Organization {
 	o := new(Organization)
 	utils.Copy(org, o)
 
 	if o.ID == uuid.Nil {
-		newID, err := uuid.NewUUID()
-		if err != nil {
-			return nil, err
-		}
+		newID, _ := uuid.NewUUID()
 		o.ID = newID
 	}
 
@@ -106,7 +108,7 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization)
 		o.CoverID = &cover.ID
 	}
 
-	return o, nil
+	return o
 }
 
 func (om *OrganizationMember) Create(ctx context.Context) error {

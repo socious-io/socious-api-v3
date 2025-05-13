@@ -50,7 +50,7 @@ func authGroup(router *gin.Engine) {
 		)
 
 		goaccountUser, err := token.GetUserProfile(user)
-		user = models.GetTransformedUser(ctx, goaccountUser)
+		user = models.GetTransformedUser(ctx, *goaccountUser)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -78,12 +78,7 @@ func authGroup(router *gin.Engine) {
 		}
 
 		for _, o := range orgs {
-			org, err := models.GetTransformedOrganization(ctx, o)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-				return
-			}
-
+			org := models.GetTransformedOrganization(ctx, o)
 			if err := org.Upsert(ctx, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}

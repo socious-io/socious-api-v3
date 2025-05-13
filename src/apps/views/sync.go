@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"socious/src/apps/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,13 +22,15 @@ func syncGroup(router *gin.Engine) {
 			return
 		}
 
-		if err := form.User.Upsert(ctx); err != nil {
+		user := models.GetTransformedUser(ctx, form.User)
+		if err := user.Upsert(ctx); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
 		for _, o := range form.Organizations {
-			if err := o.Upsert(ctx, form.User.ID); err != nil {
+			organization := models.GetTransformedOrganization(ctx, o)
+			if err := organization.Upsert(ctx, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
 		}

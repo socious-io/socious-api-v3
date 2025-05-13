@@ -4,6 +4,7 @@ import (
 	"socious/src/apps/models"
 
 	"github.com/google/uuid"
+	"github.com/socious-io/goaccount"
 )
 
 // Authorization
@@ -126,6 +127,6 @@ type OrganizationUpdateForm struct {
 }
 
 type SyncForm struct {
-	Organizations []models.Organization `json:"organizations"`
-	User          models.User           `json:"user" validate:"required"`
+	Organizations []goaccount.Organization `json:"organizations"`
+	User          goaccount.User           `json:"user" validate:"required"`
 }
