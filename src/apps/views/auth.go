@@ -49,7 +49,7 @@ func authGroup(router *gin.Engine) {
 			ctx     = c.MustGet("ctx").(context.Context)
 		)
 
-		goaccountUser, err := token.GetUserProfile(user)
+		goaccountUser, err := token.GetUserProfile()
 		user = models.GetTransformedUser(ctx, *goaccountUser)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

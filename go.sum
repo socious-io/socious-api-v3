@@ -160,6 +160,8 @@ github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDN
 github.com/rogpeppe/go-internal v1.11.0/go.mod h1:ddIwULY96R17DhadqLgMfk9H9tvdUzkipdSkR5nkCZA=
 github.com/socious-io/goaccount v0.1.8-0.20250416000202-ee6d271491fb h1:rQUff1pH18Ax2sDj6dhQpSICCT+eN5Yl1a2cJW9uDTE=
 github.com/socious-io/goaccount v0.1.8-0.20250416000202-ee6d271491fb/go.mod h1:bRjcLBd9KwDjr3hW6L6TtFFZjURn2dbl+Zvjd55RPX0=
+github.com/socious-io/goaccount v0.1.92-0.20250513041412-b1ee76fed1c7 h1:Jkm3ercqy9FADH+eH1JPGF4uy2JQIqIuftBQrm6outg=
+github.com/socious-io/goaccount v0.1.92-0.20250513041412-b1ee76fed1c7/go.mod h1:bRjcLBd9KwDjr3hW6L6TtFFZjURn2dbl+Zvjd55RPX0=
 github.com/socious-io/goauth v0.0.3 h1:QCtaEfsyU540DQrA68SdbWA1JClX5MXS+dn2bcOmX5w=
 github.com/socious-io/goauth v0.0.3/go.mod h1:ey/FXfG/zhKzBUPVQZNCYUEQx5W+hCNITshQDF8VNyE=
 github.com/socious-io/gomq v0.1.6 h1:Dm7ZCKvQ3oEKiltXJ9TewChscVTwRBmLTFzz5O5AjzI=
