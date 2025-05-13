@@ -22,7 +22,7 @@ func authGroup() {
 		// 	Expect(w.Code).To(Equal(200))
 		// 	authTokens = append(authTokens, body["access_token"].(string))
 		// 	authRefreshTokens = append(authRefreshTokens, body["refresh_token"].(string))
-		// 	claims, _ := goauth.VerifyToken(body["access_token"].(string))
+		// 	claims, _ := goaccount.VerifyToken(body["access_token"].(string))
 		// 	usersData[i].ID = uuid.MustParse(claims.ID)
 		// }
 		Expect(200).To(Equal(200))

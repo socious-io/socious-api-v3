@@ -15,7 +15,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/socious-io/goauth"
+	"github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 
@@ -47,7 +47,7 @@ var _ = BeforeSuite(func() {
 		if err != nil {
 			continue
 		}
-		token, _ := goauth.GenerateToken(u.ID.String(), false)
+		token, _ := goaccount.GenerateToken(u.ID.String(), false)
 		authTokens = append(authTokens, token)
 	}
 })

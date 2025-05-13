@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/socious-io/goaccount"
-	"github.com/socious-io/goauth"
 )
 
 func authGroup(router *gin.Engine) {
@@ -88,7 +87,7 @@ func authGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		jwt, err := goauth.GenerateFullTokens(user.ID.String())
+		jwt, err := goaccount.GenerateFullTokens(user.ID.String())
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -102,12 +101,12 @@ func authGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		claims, err := goauth.VerifyToken(form.RefreshToken)
+		claims, err := goaccount.VerifyToken(form.RefreshToken)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		jwt, err := goauth.GenerateFullTokens(claims.ID)
+		jwt, err := goaccount.GenerateFullTokens(claims.ID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return

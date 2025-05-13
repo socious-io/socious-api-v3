@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/socious-io/goaccount"
 	database "github.com/socious-io/pkg_database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/socious-io/goauth"
 )
 
 /*
@@ -22,7 +22,7 @@ func LoginRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := c.GetHeader("Authorization")
 
-		claims, err := goauth.ClaimsFromBearerToken(tokenStr)
+		claims, err := goaccount.ClaimsFromBearerToken(tokenStr)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
@@ -56,7 +56,7 @@ func LoginOptional() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenStr := c.GetHeader("Authorization")
 
-		claims, err := goauth.ClaimsFromBearerToken(tokenStr)
+		claims, err := goaccount.ClaimsFromBearerToken(tokenStr)
 		if err != nil {
 			c.Next()
 			return
@@ -138,9 +138,9 @@ func AccountCenterRequired() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Request.Header.Get("x-account-center-id")
 		secret := c.Request.Header.Get("x-account-center-secret")
-		hash, _ := goauth.HashPassword(secret)
+		hash, _ := goaccount.HashPassword(secret)
 
-		if id != config.Config.GoAccounts.ID || goauth.CheckPasswordHash(secret, hash) != nil {
+		if id != config.Config.GoAccounts.ID || goaccount.CheckPasswordHash(secret, hash) != nil {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Account center required"})
 			c.Abort()
 			return

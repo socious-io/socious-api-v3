@@ -23,6 +23,9 @@ goaccounts:
   host: host
   id: id
   secret: secret
+  jwt:
+    secret: this-is-secret
+    duration: [N HOUR]
 payment:
   fiats:
     - name: STRIPE
