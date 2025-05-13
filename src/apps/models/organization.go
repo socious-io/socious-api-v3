@@ -79,7 +79,7 @@ func (Organization) FetchQuery() string {
 	return "organizations/fetch"
 }
 
-func GetTransformedOrganization(ctx context.Context, org goaccount.Organization) *Organization {
+func GetTransformedOrganization(ctx context.Context, org goaccount.Organization, member *User) *Organization {
 	o := new(Organization)
 	utils.Copy(org, o)
 
@@ -97,6 +97,7 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization)
 	if org.Logo != nil {
 		logo := new(Media)
 		utils.Copy(org.Logo, logo)
+		logo.IdentityID = member.ID
 		logo.Upsert(ctx)
 		o.LogoID = &logo.ID
 	}
@@ -104,6 +105,7 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization)
 	if org.Cover != nil {
 		cover := new(Media)
 		utils.Copy(org.Cover, cover)
+		cover.IdentityID = member.ID
 		cover.Upsert(ctx)
 		o.CoverID = &cover.ID
 	}

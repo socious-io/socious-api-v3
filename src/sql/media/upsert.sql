@@ -4,5 +4,5 @@ ON CONFLICT(id) DO UPDATE
 SET
     identity_id=EXCLUDED.identity_id,
     url=EXCLUDED.url,
-    filename=EXCLUDED.filename,
-RETURNING *
+    filename=EXCLUDED.filename
+RETURNING *;

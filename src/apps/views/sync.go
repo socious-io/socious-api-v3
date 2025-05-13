@@ -29,7 +29,7 @@ func syncGroup(router *gin.Engine) {
 		}
 
 		for _, o := range form.Organizations {
-			organization := models.GetTransformedOrganization(ctx, o)
+			organization := models.GetTransformedOrganization(ctx, o, user)
 			if err := organization.Upsert(ctx, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}

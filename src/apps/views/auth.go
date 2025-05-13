@@ -78,7 +78,7 @@ func authGroup(router *gin.Engine) {
 		}
 
 		for _, o := range orgs {
-			org := models.GetTransformedOrganization(ctx, o)
+			org := models.GetTransformedOrganization(ctx, o, user)
 			if err := org.Upsert(ctx, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
