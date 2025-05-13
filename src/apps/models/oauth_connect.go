@@ -13,7 +13,7 @@ type OauthConnect struct {
 	ID             uuid.UUID               `db:"id" json:"id"`
 	IdentityId     uuid.UUID               `db:"identity_id" json:"identity_id"`
 	Provider       OauthConnectedProviders `db:"provider" json:"provider"`
-	MatrixUniqueId string                  `db:"matrix_unique_id" json:"matrix_unique_id"`
+	MatrixUniqueID string                  `db:"matrix_unique_id" json:"matrix_unique_id"`
 	AccessToken    string                  `db:"access_token" json:"access_token"`
 	RefreshToken   *string                 `db:"refresh_token" json:"refresh_token"`
 	Meta           *types.JSONText         `db:"meta" json:"meta"`
@@ -39,8 +39,25 @@ func GetOauthConnectByIdentityId(identityId uuid.UUID, provider OauthConnectedPr
 	return oc, nil
 }
 
-func (oc *OauthConnect) UpdateStatus(ctx context.Context, Status UserStatus) error {
-	rows, err := database.Query(ctx, "oauth_connects/update_status", oc.ID, Status)
+func GetOauthConnectByMUI(mui string, provider OauthConnectedProviders) (*OauthConnect, error) {
+	oc := new(OauthConnect)
+	if err := database.Get(oc, "oauth_connects/get_by_mui", mui, provider); err != nil {
+		return nil, err
+	}
+	return oc, nil
+}
+
+func (oc *OauthConnect) Upsert(ctx context.Context) error {
+	rows, err := database.Query(
+		ctx, "oauth_connects/upsert",
+		oc.IdentityId,
+		oc.Provider,
+		oc.MatrixUniqueID,
+		oc.AccessToken,
+		oc.RefreshToken,
+		oc.Meta,
+		oc.ExpiredAt,
+	)
 	if err != nil {
 		return err
 	}

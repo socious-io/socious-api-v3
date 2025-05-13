@@ -48,20 +48,28 @@ func (m *Media) Create(ctx context.Context) error {
 	return nil
 }
 
+func (m *Media) Upsert(ctx context.Context) error {
+	rows, err := database.Query(
+		ctx,
+		"media/upsert",
+		m.ID, m.IdentityID, m.URL, m.Filename,
+	)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := m.Scan(rows); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func GetMedia(id uuid.UUID) (*Media, error) {
 	m := new(Media)
 	if err := database.Fetch(m, id); err != nil {
 		return nil, err
 	}
 	return m, nil
-}
-
-func getAllMedia() ([]Media, error) {
-	result := []Media{}
-	return result, nil
-}
-
-func getManyMedia() ([]Media, error) {
-	result := []Media{}
-	return result, nil
 }

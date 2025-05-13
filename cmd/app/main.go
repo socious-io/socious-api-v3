@@ -6,6 +6,7 @@ import (
 	"socious/src/config"
 	"time"
 
+	goaccount "github.com/socious-io/goaccount"
 	"github.com/socious-io/gomq"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
@@ -37,6 +38,9 @@ func main() {
 		ChannelDir: "",
 	})
 	gomq.Connect()
+
+	//Configure Socious ID SDK
+	goaccount.Setup(config.Config.GoAccounts)
 
 	apps.Serve()
 }

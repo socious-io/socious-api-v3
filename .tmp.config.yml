@@ -2,8 +2,6 @@ env: development
 port: 3000
 host: "http://localhost:3000"
 secret: this-is-secret
-sso:
-  secret: sec
 debug: true
 database: 
   url: postgresql://socious:passwd@localhost:5432/socious?sslmode=disable
@@ -21,6 +19,13 @@ cors:
 nats:
   url: nats://127.0.0.1:4222
   secret: secret
+goaccounts:
+  host: host
+  id: id
+  secret: secret
+  jwt:
+    secret: this-is-secret
+    duration: [N HOUR]
 payment:
   fiats:
     - name: STRIPE

@@ -21,7 +21,7 @@ func contractGroup() {
 	It("should create contract", func() {
 		for i, data := range contractsData {
 			w := httptest.NewRecorder()
-			data["client_id"] = usersData[1]["id"]
+			data["client_id"] = usersData[1].ID
 			reqBody, _ := json.Marshal(data)
 			req, _ := http.NewRequest("POST", "/contracts", bytes.NewBuffer(reqBody))
 			req.Header.Set("Content-Type", "application/json")
@@ -36,7 +36,7 @@ func contractGroup() {
 	It("should update contract", func() {
 		for i, data := range contractsData {
 			w := httptest.NewRecorder()
-			data["client_id"] = usersData[1]["id"]
+			data["client_id"] = usersData[1].ID
 			reqBody, _ := json.Marshal(data)
 			req, _ := http.NewRequest("PATCH", fmt.Sprintf("/contracts/%s", data["id"]), bytes.NewBuffer(reqBody))
 			req.Header.Set("Content-Type", "application/json")

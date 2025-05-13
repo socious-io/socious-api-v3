@@ -1,1 +1,9 @@
+# Configs
 config.yml
+
+# Air
+bin/
+tmp/
+
+# Editor
+.vscode
