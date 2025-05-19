@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 
+	"github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	"gopkg.in/yaml.v2"
 )
@@ -10,13 +11,10 @@ import (
 var Config *ConfigType
 
 type ConfigType struct {
-	Env    string `mapstructure:"env"`
-	Port   int    `mapstructure:"port"`
-	Debug  bool   `mapstructure:"debug"`
-	Secret string `mapstructure:"secret"`
-	SSO    struct {
-		Secret string `mapstructure:"secret"`
-	} `mapstructure:"sso"`
+	Env      string `mapstructure:"env"`
+	Port     int    `mapstructure:"port"`
+	Debug    bool   `mapstructure:"debug"`
+	Secret   string `mapstructure:"secret"`
 	Host     string `mapstructure:"host"`
 	Database struct {
 		URL        string `mapstructure:"url"`
@@ -42,6 +40,7 @@ type ConfigType struct {
 		Chains gopay.Chains `mapstructure:"chains"`
 		Fiats  gopay.Fiats  `mapstructure:"fiats"`
 	} `mapstructure:"payment"`
+	GoAccounts goaccount.Config `mapstructure:"goaccounts"`
 }
 
 func Init(filename string) (*ConfigType, error) {

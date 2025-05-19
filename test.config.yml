@@ -21,3 +21,10 @@ cors:
 nats:
   url: nats://127.0.0.1:4222
   secret: secret
+goaccounts:
+  host: host
+  id: id
+  secret: secret
+  jwt:
+    secret: this-is-secret
+    duration: 24

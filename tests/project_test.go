@@ -10,7 +10,6 @@ import (
 	"socious/src/apps/models"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -32,7 +31,7 @@ func projectGroup() {
 		//Creating Media
 		media := models.Media{
 			Filename:   "media_filename.ext",
-			IdentityID: uuid.MustParse(usersData[0]["id"].(string)),
+			IdentityID: usersData[0].ID,
 			URL:        "media_url",
 		}
 		media.Create(ctx)
@@ -42,6 +41,7 @@ func projectGroup() {
 	It("should create service", func() {
 		for i, data := range servicesData {
 			w := httptest.NewRecorder()
+
 			reqBody, _ := json.Marshal(data)
 			req, _ := http.NewRequest("POST", "/projects", bytes.NewBuffer(reqBody))
 			req.Header.Set("Content-Type", "application/json")
