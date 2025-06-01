@@ -14,6 +14,8 @@ env:
   DOCKER_CONTAINER_NAME: socious-api-v3
   DOCKER_CONTAINER_NETWORK: sociousapiv3_default
   CONFIG_DIR_NAME: socious-api-v3
+  GO_VERSION: 1.24.2
+  PORT: 5063
 
 jobs:
   test:
@@ -40,7 +42,7 @@ jobs:
       - name: Setup Go environment
         uses: actions/setup-go@v5.0.2
         with:
-          go-version: '1.22.5'
+          go-version: ${{ env.GO_VERSION}}
           cache-dependency-path: 'go.sum'
 
       - id: go-cache-paths
@@ -211,7 +213,7 @@ jobs:
 
       - name: Docker run
         run: |
-          docker run -d --restart always -p 5064:5064 -h ${{ env.DOCKER_CONTAINER_NAME }} --network ${{ env.DOCKER_CONTAINER_NETWORK }} --name ${{ env.DOCKER_CONTAINER_NAME }} ${{ steps.meta.outputs.tags }}
+          docker run -d --restart always -p ${{ env.PORT }}:${{ env.PORT }} -h ${{ env.DOCKER_CONTAINER_NAME }} --network ${{ env.DOCKER_CONTAINER_NETWORK }} --name ${{ env.DOCKER_CONTAINER_NAME }} ${{ steps.meta.outputs.tags }}
 
   # deploy-worker:
   #   needs: [build-worker]
