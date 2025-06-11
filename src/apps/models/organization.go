@@ -94,10 +94,16 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization,
 		o.Status = OrganizationStatusInactive
 	}
 
+	o.LogoID = nil
+	o.CoverID = nil
+
+	return o
+}
+
+func (o *Organization) AttachMedia(ctx context.Context, org goaccount.Organization) error {
 	if org.Logo != nil {
 		logo := new(Media)
 		utils.Copy(org.Logo, logo)
-		logo.IdentityID = member.ID
 		logo.Upsert(ctx)
 		o.LogoID = &logo.ID
 	}
@@ -105,12 +111,11 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization,
 	if org.Cover != nil {
 		cover := new(Media)
 		utils.Copy(org.Cover, cover)
-		cover.IdentityID = member.ID
 		cover.Upsert(ctx)
 		o.CoverID = &cover.ID
 	}
 
-	return o
+	return nil
 }
 
 func (om *OrganizationMember) Create(ctx context.Context) error {

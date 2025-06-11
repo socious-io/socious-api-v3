@@ -90,21 +90,34 @@ func GetTransformedUser(ctx context.Context, user goaccount.User) *User {
 		u.IdentityVerified = true
 	}
 
+	u.AvatarID = nil
+	u.CoverID = nil
+
+	return u
+}
+
+func (u *User) AttachMedia(ctx context.Context, user goaccount.User) error {
 	if user.Avatar != nil {
 		avatar := new(Media)
 		utils.Copy(user.Avatar, avatar)
-		avatar.Upsert(ctx)
+		err := avatar.Upsert(ctx)
+		if err != nil {
+			return err
+		}
 		u.AvatarID = &avatar.ID
 	}
 
 	if user.Cover != nil {
 		cover := new(Media)
 		utils.Copy(user.Cover, cover)
-		cover.Upsert(ctx)
+		err := cover.Upsert(ctx)
+		if err != nil {
+			return err
+		}
 		u.CoverID = &cover.ID
 	}
 
-	return u
+	return nil
 }
 
 func (u *User) Upsert(ctx context.Context) error {
