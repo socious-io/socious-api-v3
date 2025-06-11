@@ -55,6 +55,16 @@ func authGroup(router *gin.Engine) {
 			return
 		}
 
+		if err := user.Upsert(ctx); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := user.AttachMedia(ctx, *goaccountUser); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
 		if connect, err = models.GetOauthConnectByMUI(user.ID.String(), models.OauthConnectedProvidersSociousID); err != nil {
 			connect = &models.OauthConnect{
 				Provider:       models.OauthConnectedProvidersSociousID,
@@ -63,11 +73,6 @@ func authGroup(router *gin.Engine) {
 				MatrixUniqueID: user.ID.String(),
 				IdentityId:     user.ID,
 			}
-		}
-
-		if err := user.Upsert(ctx); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
 		}
 
 		orgs, err := token.GetMyOrganizations()
@@ -79,6 +84,9 @@ func authGroup(router *gin.Engine) {
 		for _, o := range orgs {
 			org := models.GetTransformedOrganization(ctx, o, user)
 			if err := org.Upsert(ctx, user.ID); err != nil {
+				log.Println(err.Error(), o)
+			}
+			if err := org.AttachMedia(ctx, o); err != nil {
 				log.Println(err.Error(), o)
 			}
 		}
