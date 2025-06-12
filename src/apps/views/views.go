@@ -9,4 +9,5 @@ func Init(r *gin.Engine) {
 	usersGroup(r)
 	organizationsGroup(r)
 	syncGroup(r)
+	identitiesGroup(r)
 }
