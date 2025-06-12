@@ -1,7 +1,7 @@
 package models
 
 import (
-	"fmt"
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -45,9 +45,13 @@ func GetIdentities(ids []interface{}) ([]Identity, error) {
 
 func GetAllIdentities(userID uuid.UUID, identityID uuid.UUID) ([]Identity, error) {
 	var identities []Identity
-	fmt.Println(userID, identityID)
 	if err := database.QuerySelect("identities/get_all", &identities, userID, identityID); err != nil {
 		return nil, err
 	}
+
+	for i, identity := range identities {
+		json.Unmarshal(identity.Meta, &identities[i].MetaMap)
+	}
+
 	return identities, nil
 }
