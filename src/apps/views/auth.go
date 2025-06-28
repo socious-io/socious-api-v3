@@ -121,30 +121,4 @@ func authGroup(router *gin.Engine) {
 		}
 		c.JSON(http.StatusAccepted, jwt)
 	})
-
-	g.DELETE("/logout", LoginRequired(), func(c *gin.Context) {
-
-		u := c.MustGet("user").(*models.User)
-
-		connect, err := models.GetOauthConnectByMUI(u.ID.String(), models.OauthConnectedProvidersSociousID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		t, err := goaccount.NewSessionToken(connect.AccessToken, *connect.RefreshToken)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		err = t.Logout()
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
-		c.JSON(http.StatusAccepted, nil)
-	})
-
 }
