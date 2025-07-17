@@ -1,6 +1,7 @@
 package tests_test
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 
@@ -37,6 +39,17 @@ var (
 // Setup the test environment before any tests run
 var _ = BeforeSuite(func() {
 	db, router = setupTestEnvironment()
+
+	ctx := context.Background()
+	for _, u := range usersData {
+		u.IdentityVerified = true
+		err := u.Upsert(ctx)
+		if err != nil {
+			continue
+		}
+		token, _ := goaccount.GenerateToken(u.ID.String(), false)
+		authTokens = append(authTokens, token)
+	}
 })
 
 // Drop the database after all tests have run
@@ -133,6 +146,7 @@ func setupTestEnvironment() (*sqlx.DB, *gin.Engine) {
 	}); err != nil {
 		log.Fatalf("gopay error %v", err)
 	}
+	goaccount.Setup(config.Config.GoAccounts)
 
 	log.Println("Migrations applied successfully!")
 	router := apps.Init()

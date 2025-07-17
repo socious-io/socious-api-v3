@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,8 @@ type Identity struct {
 	Type      IdentityType           `db:"type" json:"type"`
 	MetaMap   map[string]interface{} `db:"-" json:"meta"`
 	Meta      types.JSONText         `db:"meta" json:"-"`
+	Primary   bool                   `db:"primary" json:"primary"`
+	Current   bool                   `db:"current" json:"current"`
 	CreatedAt time.Time              `db:"created_at" json:"created_at"`
 }
 
@@ -30,4 +33,25 @@ func GetIdentity(id uuid.UUID) (*Identity, error) {
 		return nil, err
 	}
 	return i, nil
+}
+
+func GetIdentities(ids []interface{}) ([]Identity, error) {
+	var identities []Identity
+	if err := database.Fetch(&identities, ids...); err != nil {
+		return nil, err
+	}
+	return identities, nil
+}
+
+func GetAllIdentities(userID uuid.UUID, identityID uuid.UUID) ([]Identity, error) {
+	var identities []Identity
+	if err := database.QuerySelect("identities/get_all", &identities, userID, identityID); err != nil {
+		return nil, err
+	}
+
+	for i, identity := range identities {
+		json.Unmarshal(identity.Meta, &identities[i].MetaMap)
+	}
+
+	return identities, nil
 }
