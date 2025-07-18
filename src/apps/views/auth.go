@@ -82,11 +82,11 @@ func authGroup(router *gin.Engine) {
 		}
 
 		for _, o := range orgs {
-			org := models.GetTransformedOrganization(ctx, o, user)
+			org := models.GetTransformedOrganization(ctx, o)
 			if err := org.Upsert(ctx, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
-			if err := org.AttachMedia(ctx, o); err != nil {
+			if err := org.AttachMedia(ctx, o, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
 		}

@@ -79,7 +79,7 @@ func (Organization) FetchQuery() string {
 	return "organizations/fetch"
 }
 
-func GetTransformedOrganization(ctx context.Context, org goaccount.Organization, member *User) *Organization {
+func GetTransformedOrganization(ctx context.Context, org goaccount.Organization) *Organization {
 	o := new(Organization)
 	utils.Copy(org, o)
 
@@ -100,19 +100,29 @@ func GetTransformedOrganization(ctx context.Context, org goaccount.Organization,
 	return o
 }
 
-func (o *Organization) AttachMedia(ctx context.Context, org goaccount.Organization) error {
+func (o *Organization) AttachMedia(ctx context.Context, org goaccount.Organization, userID uuid.UUID) error {
 	if org.Logo != nil {
 		logo := new(Media)
 		utils.Copy(org.Logo, logo)
-		logo.Upsert(ctx)
+		err := logo.Upsert(ctx)
+		if err != nil {
+			return err
+		}
 		o.LogoID = &logo.ID
 	}
 
 	if org.Cover != nil {
 		cover := new(Media)
 		utils.Copy(org.Cover, cover)
-		cover.Upsert(ctx)
+		err := cover.Upsert(ctx)
+		if err != nil {
+			return err
+		}
 		o.CoverID = &cover.ID
+	}
+
+	if err := o.Upsert(ctx, userID); err != nil {
+		return err
 	}
 
 	return nil
