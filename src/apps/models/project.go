@@ -34,9 +34,9 @@ type Project struct {
 	PaymentRangeLower     *string                  `db:"payment_range_lower" json:"payment_range_lower"`
 	PaymentRangeHigher    *string                  `db:"payment_range_higher" json:"payment_range_higher"`
 	ExperienceLevel       *int                     `db:"experience_level" json:"experience_level"`
-	Status                *ProjectStatus           `db:"status" json:"status"`
+	Status                ProjectStatus            `db:"status" json:"status"`
 	PaymentType           *PaymentType             `db:"payment_type" json:"payment_type"`
-	PaymentScheme         *PaymentScheme           `db:"payment_scheme" json:"payment_scheme"`
+	PaymentScheme         PaymentScheme            `db:"payment_scheme" json:"payment_scheme"`
 	Country               *string                  `db:"country" json:"country"`
 	Skills                pq.StringArray           `db:"skills" json:"skills"`
 	CausesTags            pq.StringArray           `db:"causes_tags" json:"causes_tags"`
@@ -69,6 +69,15 @@ type Project struct {
 	JobCategoryJson *types.JSONText `db:"job_category" json:"job_category"`
 	IdentityJson    types.JSONText  `db:"identity" json:"-"`
 }
+
+func (Project) TableName() string {
+	return "projects"
+}
+
+func (Project) FetchQuery() string {
+	return "projects/fetch"
+}
+
 type JobCategory struct {
 	ID                uuid.UUID `db:"id" json:"id"`
 	Name              string    `db:"name" json:"name"`
@@ -78,12 +87,12 @@ type JobCategory struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
-func (Project) TableName() string {
-	return "projects"
+func (JobCategory) TableName() string {
+	return "job_categories"
 }
 
-func (Project) FetchQuery() string {
-	return "projects/fetch"
+func (JobCategory) FetchQuery() string {
+	return "projects/fetch_job_category"
 }
 
 func (p *Project) Create(ctx context.Context, workSamples []uuid.UUID) error {
@@ -327,4 +336,12 @@ func (jc *JobCategory) Create(ctx context.Context) error {
 	}
 	rows.Close()
 	return nil
+}
+
+func GetJobCategory(id uuid.UUID) (*JobCategory, error) {
+	jc := new(JobCategory)
+	if err := database.Fetch(jc, id); err != nil {
+		return nil, err
+	}
+	return jc, nil
 }
