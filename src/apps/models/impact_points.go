@@ -46,7 +46,7 @@ func CalculateImpactPoints(c *Contract) (float64, *CalculateImpactPointsParams, 
 		return 0, nil, err
 	}
 
-	if project.PaymentScheme == PaymentSchemeFixed && contract.Status != ContractStatusCompleted {
+	if *project.PaymentScheme == PaymentSchemeFixed && contract.Status != ContractStatusCompleted {
 		return 0, nil, fmt.Errorf("contract is not confirmed")
 	}
 

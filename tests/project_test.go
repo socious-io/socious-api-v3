@@ -48,6 +48,7 @@ func projectGroup() {
 			req.Header.Set("Authorization", authTokens[0])
 			router.ServeHTTP(w, req)
 			body := decodeBody(w.Body)
+			fmt.Println(body)
 			Expect(w.Code).To(Equal(http.StatusCreated))
 			servicesData[i]["id"] = body["id"]
 		}

@@ -34,9 +34,9 @@ type Project struct {
 	PaymentRangeLower     *string                  `db:"payment_range_lower" json:"payment_range_lower"`
 	PaymentRangeHigher    *string                  `db:"payment_range_higher" json:"payment_range_higher"`
 	ExperienceLevel       *int                     `db:"experience_level" json:"experience_level"`
-	Status                ProjectStatus            `db:"status" json:"status"`
+	Status                *ProjectStatus           `db:"status" json:"status"`
 	PaymentType           *PaymentType             `db:"payment_type" json:"payment_type"`
-	PaymentScheme         PaymentScheme            `db:"payment_scheme" json:"payment_scheme"`
+	PaymentScheme         *PaymentScheme           `db:"payment_scheme" json:"payment_scheme"`
 	Country               *string                  `db:"country" json:"country"`
 	Skills                pq.StringArray           `db:"skills" json:"skills"`
 	CausesTags            pq.StringArray           `db:"causes_tags" json:"causes_tags"`
