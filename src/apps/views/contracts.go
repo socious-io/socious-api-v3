@@ -235,6 +235,7 @@ func contractsGroup(router *gin.Engine) {
 					"category": params.Category,
 				},
 				UniqueTag: contract.ID.String(),
+				Value:     float64(contract.Commitment),
 			}
 			err = ip.AddImpactPoint()
 			if err != nil {
