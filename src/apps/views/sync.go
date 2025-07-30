@@ -27,10 +27,17 @@ func syncGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		if err := user.AttachMedia(ctx, form.User); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 
 		for _, o := range form.Organizations {
-			organization := models.GetTransformedOrganization(ctx, o, user)
+			organization := models.GetTransformedOrganization(ctx, o)
 			if err := organization.Upsert(ctx, user.ID); err != nil {
+				log.Println(err.Error(), o)
+			}
+			if err := organization.AttachMedia(ctx, o, user.ID); err != nil {
 				log.Println(err.Error(), o)
 			}
 		}

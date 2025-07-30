@@ -117,6 +117,10 @@ func (u *User) AttachMedia(ctx context.Context, user goaccount.User) error {
 		u.CoverID = &cover.ID
 	}
 
+	if err := u.Upsert(ctx); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -3,11 +3,13 @@ package views
 import (
 	"context"
 	"fmt"
+	"math"
 	"net/http"
 	"socious/src/apps/lib"
 	"socious/src/apps/models"
 	"socious/src/apps/utils"
 
+	"github.com/socious-io/goaccount"
 	"github.com/socious-io/gopay"
 	database "github.com/socious-io/pkg_database"
 
@@ -207,6 +209,40 @@ func contractsGroup(router *gin.Engine) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		//TODO: use Nats
+		go func() {
+			impactPoints, params, err := models.CalculateImpactPoints(contract)
+			if err != nil {
+				fmt.Println(fmt.Errorf("failed to calculate impact point for contract: %s; error: %v", contract.ID, err))
+				return
+			}
+
+			impactPointType := "WORKSUBMIT"
+			if contract.Type == models.ContractTypeVolunteer {
+				impactPointType = "VOLUNTEER"
+			}
+
+			ip := goaccount.ImpactPoint{
+				UserID:              contract.ClientID,
+				TotalPoints:         int(math.Floor(impactPoints)),
+				SocialCause:         params.Project.CausesTags[0],
+				SocialCauseCategory: string(utils.GetSDG(params.Project.CausesTags[0])),
+				Type:                impactPointType,
+				Meta: map[string]any{
+					"contract": contract,
+					"project":  params.Project,
+					"category": params.Category,
+				},
+				UniqueTag: contract.ID.String(),
+				Value:     float64(contract.Commitment),
+			}
+			err = ip.AddImpactPoint()
+			if err != nil {
+				fmt.Println(fmt.Errorf("failed to add impact point for contract: %s; error %v", contract.ID, err))
+			}
+		}()
+
 		c.JSON(http.StatusAccepted, contract)
 	})
 
