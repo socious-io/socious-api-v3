@@ -10,8 +10,9 @@ import (
 // Authorization
 
 type AuthForm struct {
-	RedirectURL string                 `json:"redirect_url" validate:"required"`
-	AuthMode    goaccount.AuthModeType `json:"auth_mode" validate:"required"`
+	RedirectURL   string                 `json:"redirect_url" validate:"required"`
+	AuthMode      goaccount.AuthModeType `json:"auth_mode" validate:"required"`
+	OrgOnboarding bool                   `json:"org_onboarding" validate:"required"`
 }
 
 type SessionForm struct {
