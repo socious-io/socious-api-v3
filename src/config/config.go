@@ -38,7 +38,8 @@ type ConfigType struct {
 		Chains gopay.Chains `mapstructure:"chains"`
 		Fiats  gopay.Fiats  `mapstructure:"fiats"`
 	} `mapstructure:"payment"`
-	GoAccounts goaccount.Config `mapstructure:"goaccounts"`
+	GoAccounts     goaccount.Config `mapstructure:"goaccounts"`
+	SendgridApiKey string           `mapstructure:"sendgrid_api_key"`
 }
 
 func Init(filename string) (*ConfigType, error) {
