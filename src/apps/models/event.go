@@ -12,7 +12,7 @@ type Event struct {
 	Title       string    `json:"title" db:"title"`
 	Description string    `json:"description" db:"description"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	EventAt     time.Time `json:"updated_at" db:"updated_at"`
+	EventAt     time.Time `json:"event_at" db:"event_at"`
 }
 
 func (Event) TableName() string {

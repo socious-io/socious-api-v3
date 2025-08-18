@@ -1,20 +1,19 @@
-package main
+package tickets
 
 import (
 	"encoding/base64"
 	"log"
 	"os"
-	"socious/src/config"
 
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
 const (
-	EMAIL_TEMPLATE = ""
+	EMAIL_TEMPLATE = "d-cc062f1a03d0450e9008ecdace2f2319"
 )
 
-func sendEmail(email, name, ticketPath string) {
+func sendEmail(apikey, email, name, ticketPath string) {
 	from := mail.NewEmail("Socious", "info@socious.io")
 	to := mail.NewEmail(name, email)
 
@@ -41,11 +40,11 @@ func sendEmail(email, name, ticketPath string) {
 	attachment.Content = encoded
 	attachment.Type = "application/pdf"
 	attachment.Filename = "ticket.pdf"
-	attachment.Disposition = "ticket attachment"
+	attachment.Disposition = "attachment"
 
 	message.AddAttachment(attachment)
 
-	client := sendgrid.NewSendClient(config.Config.SendgridApiKey)
+	client := sendgrid.NewSendClient(apikey)
 	response, err := client.Send(message)
 	if err != nil {
 		log.Printf("Send error: %v \n", err)

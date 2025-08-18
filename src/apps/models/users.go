@@ -16,8 +16,8 @@ import (
 
 type User struct {
 	ID                  uuid.UUID      `db:"id" json:"id"`
-	FirstName           string         `db:"first_name" json:"first_name"`
-	LastName            string         `db:"last_name" json:"last_name"`
+	FirstName           *string        `db:"first_name" json:"first_name"`
+	LastName            *string        `db:"last_name" json:"last_name"`
 	Username            string         `db:"username" json:"username"`
 	Email               string         `db:"email" json:"email"`
 	EmailText           *string        `db:"email_text" json:"email_text"`
@@ -55,7 +55,7 @@ type User struct {
 	OpenToVolunteer     bool           `db:"open_to_volunteer" json:"open_to_volunteer"`
 	IdentityVerified    bool           `db:"identity_verified" json:"identity_verified"`
 	IsContributor       *bool          `db:"is_contributor" json:"is_contributor"`
-	Events              []uuid.UUID    `db:"events" json:"events"`
+	Events              pq.StringArray `db:"events" json:"events"`
 
 	AvatarID   *uuid.UUID     `db:"avatar_id" json:"avatar_id"`
 	Avatar     *Media         `db:"-" json:"avatar"`
@@ -127,6 +127,7 @@ func (u *User) Upsert(ctx context.Context) error {
 	if u.ID == uuid.Nil {
 		u.ID = uuid.New()
 	}
+
 	rows, err := database.Query(
 		ctx,
 		"users/upsert",

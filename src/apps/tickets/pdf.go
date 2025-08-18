@@ -1,4 +1,4 @@
-package main
+package tickets
 
 import (
 	"bytes"
@@ -11,7 +11,18 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-func pdfGenerator(inputPDF string, outputPDF string, name, url string) bool {
+type Text struct {
+	Desc string
+	Text string
+}
+
+const (
+	nameDesc       = "font:Helvetica, scalefactor:.2, rot:0, pos:c, offset:150 270, color:#000000"
+	companyDesc    = "font:Helvetica, scalefactor:.15, rot:0, pos:c, offset:150 250, color:#000000"
+	ticketTypeDesc = "font:Helvetica, scalefactor:.08, rot:0, pos:c, offset:150 320, color:#000000"
+)
+
+func pdfGenerator(inputPDF string, outputPDF string, name, url, company, ticketType string) bool {
 
 	qr, err := qrcode.New(url, qrcode.Medium)
 	if err != nil {
@@ -35,21 +46,28 @@ func pdfGenerator(inputPDF string, outputPDF string, name, url string) bool {
 		log.Println("Error creating image watermark:", err)
 		return false
 	}
-	textDesc := "font:Helvetica, scalefactor:.2, rot:0, pos:c, offset:150 250, color:#000000"
-	textWM, err := api.TextWatermark(name, textDesc, true, false, types.POINTS)
-	if err != nil {
-		log.Println("Error creating text watermark:", err)
-		return false
-	}
 
 	if err := api.AddWatermarksFile(inputPDF, outputPDF, nil, qrWm, conf); err != nil {
 		log.Println("Error applying watermark:", err)
 		return false
 	}
 
-	if err := api.AddWatermarksFile(outputPDF, outputPDF, nil, textWM, conf); err != nil {
-		log.Println("Error applying watermark:", err)
-		return false
+	texts := []Text{
+		{Desc: nameDesc, Text: name},
+		{Desc: companyDesc, Text: company},
+		{Desc: ticketTypeDesc, Text: ticketType},
+	}
+
+	for _, text := range texts {
+		textWM, err := api.TextWatermark(text.Text, text.Desc, true, false, types.POINTS)
+		if err != nil {
+			log.Println("Error creating text watermark:", err)
+			return false
+		}
+		if err := api.AddWatermarksFile(outputPDF, outputPDF, nil, textWM, conf); err != nil {
+			log.Println("Error applying watermark:", err)
+			return false
+		}
 	}
 
 	log.Printf("✅ Ticket %s for %s generated successfully \n", outputPDF, name)

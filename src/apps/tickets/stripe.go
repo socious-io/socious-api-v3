@@ -1,4 +1,4 @@
-package main
+package tickets
 
 import (
 	"fmt"
@@ -46,29 +46,56 @@ func fetchSuccessfulPaymentsForLink(paymentLinkID string) {
 	for i.Next() {
 		s := i.CheckoutSession()
 		fmt.Printf("Session ID: %s\n", s.ID)
-
+		customer := new(Customer)
 		// Get customer information
 		if s.CustomerEmail != "" {
 			fmt.Printf("Customer Email: %s\n", s.CustomerEmail)
 		}
 
 		if s.CustomerDetails != nil {
-			publish(consumerTitle(CUSTOMER), Customer{
-				Name:  s.CustomerDetails.Name,
-				Email: s.CustomerDetails.Email,
-			})
+			customer.Name = s.CustomerDetails.Name
+			customer.Email = s.CustomerDetails.Email
 		}
 
 		if s.Customer != nil {
-			publish(consumerTitle(CUSTOMER), Customer{
-				Name:  s.Customer.Name,
-				Email: s.Customer.Email,
-			})
+			customer.Name = s.Customer.Name
+			customer.Email = s.Customer.Email
 		}
+
+		for _, field := range s.CustomFields {
+			if field.Key == "companyname" {
+				customer.Company = field.Text.Value
+			}
+		}
+
+		customer.TicketType = linkType(paymentLinkID)
+
+		publish(consumerTitle(CUSTOMER), customer)
 
 	}
 
 	if err := i.Err(); err != nil {
 		log.Printf("Error listing checkout sessions: %v\n", err)
+	}
+}
+
+func linkType(linkID string) string {
+	switch linkID {
+	case "plink_1RsdPvFiHSKRe5D1sErI3vNO":
+		return "Standard (Late Bird)"
+	case "plink_1RkiVZFiHSKRe5D1enUxMBhK":
+		return "Corporate Pass"
+	case "plink_1RkglwFiHSKRe5D1tKLALbNS":
+		return "Senior Pass (Late Bird)"
+	case "plink_1RgF5QFiHSKRe5D1gIEPi4Xv":
+		return "Investor"
+	case "plink_1RgF4QFiHSKRe5D1jkzfs5Uc":
+		return "Startup"
+	case "plink_1RgEoQFiHSKRe5D1hj1Pcv7i":
+		return "Student (Late Bird)"
+	case "plink_1QnC2HFiHSKRe5D1V2GmnEdd":
+		return "VIP"
+	default:
+		return "Standard"
 	}
 }
