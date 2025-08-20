@@ -17,12 +17,12 @@ type Text struct {
 }
 
 const (
-	nameDesc       = "font:Helvetica, scalefactor:.2, rot:0, pos:c, offset:150 270, color:#000000"
-	companyDesc    = "font:Helvetica, scalefactor:.15, rot:0, pos:c, offset:150 250, color:#000000"
-	ticketTypeDesc = "font:Helvetica, scalefactor:.08, rot:0, pos:c, offset:150 320, color:#000000"
+	nameDesc       = "font:Helvetica, scalefactor:.2, rot:0, pos:c, offset:150 285, color:#000000"
+	companyDesc    = "font:Helvetica, scalefactor:.15, rot:0, pos:c, offset:150 245, color:#000000"
+	ticketTypeDesc = "font:Helvetica, scalefactor:.15, rot:0, pos:c, offset:130 330, color:#000000"
 )
 
-func pdfGenerator(inputPDF string, outputPDF string, name, url, company, ticketType string) bool {
+func PdfGenerator(inputPDF string, outputPDF string, name, url, company, ticketType string) bool {
 
 	qr, err := qrcode.New(url, qrcode.Medium)
 	if err != nil {

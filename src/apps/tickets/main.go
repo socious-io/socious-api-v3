@@ -199,7 +199,7 @@ func pdfConsumer() {
 		if err := json.Unmarshal(msg.Data, cus); err != nil {
 			log.Printf("Error on consumer pdf: %v | data: %s ", err, string(msg.Data))
 		}
-		if pdfGenerator(
+		if PdfGenerator(
 			*ticketPath,
 			fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username),
 			cus.Name,

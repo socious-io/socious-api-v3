@@ -82,17 +82,17 @@ func fetchSuccessfulPaymentsForLink(paymentLinkID string) {
 func linkType(linkID string) string {
 	switch linkID {
 	case "plink_1RsdPvFiHSKRe5D1sErI3vNO":
-		return "Standard (Late Bird)"
+		return "Standard"
 	case "plink_1RkiVZFiHSKRe5D1enUxMBhK":
-		return "Corporate Pass"
+		return "Corporate"
 	case "plink_1RkglwFiHSKRe5D1tKLALbNS":
-		return "Senior Pass (Late Bird)"
+		return "Senior"
 	case "plink_1RgF5QFiHSKRe5D1gIEPi4Xv":
 		return "Investor"
 	case "plink_1RgF4QFiHSKRe5D1jkzfs5Uc":
 		return "Startup"
 	case "plink_1RgEoQFiHSKRe5D1hj1Pcv7i":
-		return "Student (Late Bird)"
+		return "Student"
 	case "plink_1QnC2HFiHSKRe5D1V2GmnEdd":
 		return "VIP"
 	default:
