@@ -132,3 +132,9 @@ type SyncForm struct {
 	Organizations []goaccount.Organization `json:"organizations"`
 	User          goaccount.User           `json:"user" validate:"required"`
 }
+
+type WalletForm struct {
+	Address string               `json:"address"`
+	Network models.WalletNetwork `json:"network"`
+	Testnet bool                 `json:"testnet"`
+}
