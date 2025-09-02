@@ -22,10 +22,11 @@ import (
 
 var (
 	configPath          = flag.String("c", "config.yml", "Path to the configuration file")
-	mode                = flag.String("m", "", "Operation mode: producer, customer-consumer, email-consumer, pdf-consumer, publish-customer")
+	mode                = flag.String("m", "", "Operation mode: producer, customer-consumer, email-consumer, pdf-consumer, publish-customer, csv")
 	ticketPath          = flag.String("t", "", "Path to ticket template")
 	ticketsGeneratedDir = flag.String("o", "", "Directory of tickets")
 	sendgridApiKey      = flag.String("ak", "", "Sendgrid api key")
+	csvPath             = flag.String("csv", "", "Path to csv file")
 
 	// this use on publish-customer
 	email      = flag.String("email", "", "Email to send")
@@ -42,6 +43,7 @@ const (
 	CUSTOMER = "customer-consumer"
 	EMAIL    = "email-consumer"
 	PDF      = "pdf-consumer"
+	CSV      = "csv-reader"
 
 	profileAddress = "https://app.socious.io/profile/users/%s/view"
 )
@@ -95,14 +97,12 @@ func Run() {
 	}
 
 	switch *mode {
+	case CSV:
+		csvReader()
 	case PUBLISH:
 		publishCustomer()
 	case CUSTOMER:
 		customerConsumer()
-	case PDF:
-		pdfConsumer()
-	case EMAIL:
-		emailConsumer()
 	default:
 		fetchPaymentLinks()
 	}
@@ -121,6 +121,13 @@ func publishCustomer() {
 		Company:    *company,
 		TicketType: *ticketType,
 	})
+}
+
+func csvReader() {
+	customers := readCSV(*csvPath)
+	for _, customer := range customers {
+		publish(consumerTitle(CUSTOMER), customer)
+	}
 }
 
 func customerConsumer() {
@@ -180,8 +187,9 @@ func customerConsumer() {
 
 		cus.UserID = user.ID
 		cus.Username = user.Username
-
-		publish(consumerTitle(PDF), cus)
+		if pdfConsumer(cus) {
+			emailConsumer(cus)
+		}
 
 	})
 	if err != nil {
@@ -191,56 +199,26 @@ func customerConsumer() {
 	select {} // block forever
 }
 
-func pdfConsumer() {
-	_, err := nc.Subscribe(consumerTitle(PDF), func(msg *nats.Msg) {
-		// Parse the message (format: "type|content")
-		log.Printf("%s got %s \n", consumerTitle(PDF), string(msg.Data))
-		cus := new(Customer)
-		if err := json.Unmarshal(msg.Data, cus); err != nil {
-			log.Printf("Error on consumer pdf: %v | data: %s ", err, string(msg.Data))
-		}
-		if PdfGenerator(
-			*ticketPath,
-			fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username),
-			cus.Name,
-			fmt.Sprintf(profileAddress, cus.Username),
-			cus.Company,
-			cus.TicketType,
-		) {
-			publish(consumerTitle(EMAIL), cus)
-		}
-
-	})
-	if err != nil {
-		log.Fatalf("Failed to subscribe: %v", err)
-	}
-
-	select {} // block forever
-
+func pdfConsumer(cus *Customer) bool {
+	return PdfGenerator(
+		*ticketPath,
+		fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username),
+		cus.Name,
+		fmt.Sprintf(profileAddress, cus.Username),
+		cus.Company,
+		cus.TicketType,
+	)
 }
 
-func emailConsumer() {
-	_, err := nc.Subscribe(consumerTitle(EMAIL), func(msg *nats.Msg) {
-		log.Printf("%s got %s \n", consumerTitle(PDF), string(msg.Data))
-		cus := new(Customer)
-		if err := json.Unmarshal(msg.Data, cus); err != nil {
-			log.Printf("Error on consumer pdf: %v | data: %s ", err, string(msg.Data))
-		}
-		ticket := fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username)
+func emailConsumer(cus *Customer) {
+	ticket := fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username)
 
-		apiKey := config.Config.SendgridApiKey
-		if *sendgridApiKey != "" {
-			apiKey = *sendgridApiKey
-		}
-
-		sendEmail(apiKey, cus.Email, cus.Name, ticket)
-	})
-
-	if err != nil {
-		log.Fatalf("Failed to subscribe: %v", err)
+	apiKey := config.Config.SendgridApiKey
+	if *sendgridApiKey != "" {
+		apiKey = *sendgridApiKey
 	}
 
-	select {} // block forever
+	sendEmail(apiKey, cus.Email, cus.Name, ticket)
 }
 
 func existsOnEvent(events pq.StringArray) bool {
