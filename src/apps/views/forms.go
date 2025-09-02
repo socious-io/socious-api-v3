@@ -127,3 +127,8 @@ type OrganizationUpdateForm struct {
 	Industry          *string    `db:"industry" json:"industry"`
 	Did               *string    `db:"did" json:"did"`
 }
+type WalletForm struct {
+	Address string               `json:"address"`
+	Network models.WalletNetwork `json:"network"`
+	Testnet bool                 `json:"testnet"`
+}

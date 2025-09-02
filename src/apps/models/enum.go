@@ -383,3 +383,20 @@ func (os *OrganizationStatus) Scan(value interface{}) error {
 func (os OrganizationStatus) Value() (driver.Value, error) {
 	return string(os), nil
 }
+
+type WalletNetwork string
+
+const (
+	WalletNetworkBSC      WalletNetwork = "bsc"
+	WalletNetworkSepolia  WalletNetwork = "sepolia"
+	WalletNetworkCardano  WalletNetwork = "cardano"
+	WalletNetworkMidnight WalletNetwork = "midnight"
+)
+
+func (w *WalletNetwork) Scan(value interface{}) error {
+	return scanEnum(value, (*string)(w))
+}
+
+func (w WalletNetwork) Value() (driver.Value, error) {
+	return string(w), nil
+}
