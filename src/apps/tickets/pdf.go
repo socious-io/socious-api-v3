@@ -23,6 +23,13 @@ const (
 )
 
 func PdfGenerator(inputPDF string, outputPDF string, name, url, company, ticketType string) bool {
+	// Recover from panics to prevent crashes
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Panic recovered in PdfGenerator: %v", r)
+			log.Printf("Parameters: name=%s, company=%s, ticketType=%s", name, company, ticketType)
+		}
+	}()
 
 	qr, err := qrcode.New(url, qrcode.Medium)
 	if err != nil {
@@ -59,6 +66,9 @@ func PdfGenerator(inputPDF string, outputPDF string, name, url, company, ticketT
 	}
 
 	for _, text := range texts {
+		if text.Text == "" {
+			continue
+		}
 		textWM, err := api.TextWatermark(text.Text, text.Desc, true, false, types.POINTS)
 		if err != nil {
 			log.Println("Error creating text watermark:", err)

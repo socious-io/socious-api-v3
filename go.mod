@@ -17,7 +17,7 @@ require (
 	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/socious-io/gomq v0.2.2-0.20250831194730-a20916bdb188
-	github.com/socious-io/gopay v0.0.20
+	github.com/socious-io/gopay v0.0.37
 	github.com/stripe/stripe-go/v81 v81.1.1
 	gopkg.in/yaml.v2 v2.4.0
 )

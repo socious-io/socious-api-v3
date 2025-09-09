@@ -189,8 +189,8 @@ github.com/socious-io/gomail v0.1.3 h1:pykLCOY3Iiao5yjc+7gJ035oUjtrDD6xIVSo8Y2Ln
 github.com/socious-io/gomail v0.1.3/go.mod h1:lxY5hsACBYClxcfbZN96eAmERsaNYZCNljWU9sd7Buw=
 github.com/socious-io/gomq v0.2.2-0.20250831194730-a20916bdb188 h1:KlVohAwMRwNC2yhXfmQgFuJu8simfv8QdCpQZ2NMayA=
 github.com/socious-io/gomq v0.2.2-0.20250831194730-a20916bdb188/go.mod h1:qx9vhqU48qydq0cTgv+mkZ9jL1ZWvHaYNqZ0xtclYec=
-github.com/socious-io/gopay v0.0.20 h1:RjVWbXGEKQ8lnquTppwJ4jhylT7LnBAwQRBwKuUQeug=
-github.com/socious-io/gopay v0.0.20/go.mod h1:A4F/tFIm/NO95kGwOXFN+DNnBtlBAx+6MrMbDv+u4po=
+github.com/socious-io/gopay v0.0.37 h1:G8KK2HYXJjBirOvIgowdjrfP68Un8UAGOL1UGOku5FU=
+github.com/socious-io/gopay v0.0.37/go.mod h1:VaAZ2FwcmyYN7DrQUKOdGH56MGNlTgBzWH0G4EtqhxA=
 github.com/socious-io/pkg_database v1.0.0 h1:y7VNH6IDE49qGBgiseCsMA0h3FRWvmR5jpwtMryl5ow=
 github.com/socious-io/pkg_database v1.0.0/go.mod h1:6YOOJBPcPq2XTnexr4QByeRZpjQ+pckft0YHAvL0npU=
 github.com/sony/gobreaker v1.0.0 h1:feX5fGGXSl3dYd4aHZItw+FpHLvvoaqkawKjVNiFMNQ=
