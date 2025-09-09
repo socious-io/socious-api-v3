@@ -70,6 +70,10 @@ func fetchSuccessfulPaymentsForLink(paymentLinkID string) {
 
 		customer.TicketType = linkType(paymentLinkID)
 
+		fmt.Printf("Customer Name: %s -- ", customer.Name)
+		fmt.Printf("Customer Company: %s -- ", customer.Company)
+		fmt.Printf("Customer Ticket Type: %s\n", customer.TicketType)
+
 		publish(consumerTitle(CUSTOMER), customer)
 
 	}
@@ -95,6 +99,8 @@ func linkType(linkID string) string {
 		return "Student"
 	case "plink_1QnC2HFiHSKRe5D1V2GmnEdd":
 		return "VIP"
+	case "plink_1S4xYEFiHSKRe5D1lDKgFp9Q":
+		return "Media pass"
 	default:
 		return "Standard"
 	}
