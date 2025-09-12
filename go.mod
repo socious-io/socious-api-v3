@@ -16,7 +16,7 @@ require (
 	github.com/pdfcpu/pdfcpu v0.11.0
 	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	github.com/socious-io/gomq v0.1.6
+	github.com/socious-io/gomq v0.2.2-0.20250831194730-a20916bdb188
 	github.com/socious-io/gopay v0.0.37
 	github.com/stripe/stripe-go/v81 v81.1.1
 	gopkg.in/yaml.v2 v2.4.0
@@ -74,7 +74,7 @@ require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.22.0 // indirect
+	github.com/go-playground/validator/v10 v10.27.0 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/errwrap v1.1.0 // indirect
@@ -87,6 +87,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/socious-io/goaccount v0.2.1
+	github.com/socious-io/gomail v0.1.3
 	github.com/socious-io/pkg_database v1.0.0
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect

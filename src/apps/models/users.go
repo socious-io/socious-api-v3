@@ -158,6 +158,48 @@ func (u *User) Upsert(ctx context.Context) error {
 	return nil
 }
 
+func (u *User) Delete(ctx context.Context, reason string) error {
+	tx, err := database.GetDB().Beginx()
+	if err != nil {
+		return err
+	}
+
+	//Remove user
+	rows, err := database.TxQuery(
+		ctx,
+		tx,
+		"users/delete",
+		u.ID,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	rows.Close()
+
+	//Add to deleted users
+	rows, err = database.TxQuery(
+		ctx,
+		tx,
+		"users/add_to_deleted_users",
+		u.ID,
+		u.Username,
+		reason,
+		u.CreatedAt,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	rows.Close()
+
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetUser(id uuid.UUID) (*User, error) {
 	u := new(User)
 	if err := database.Fetch(u, id.String()); err != nil {

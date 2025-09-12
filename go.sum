@@ -67,8 +67,8 @@ github.com/go-playground/locales v0.14.1 h1:EWaQ/wswjilfKLTECiXz7Rh+3BjFhfDFKv/o
 github.com/go-playground/locales v0.14.1/go.mod h1:hxrqLVvrK65+Rwrd5Fc6F2O76J/NuW9t0sjnWqG1slY=
 github.com/go-playground/universal-translator v0.18.1 h1:Bcnm0ZwsGyWbCzImXv+pAJnYK9S473LQFuzCbDbfSFY=
 github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91TpwSH2VMlDf28Uj24BCp08ZFTUY=
-github.com/go-playground/validator/v10 v10.22.0 h1:k6HsTZ0sTnROkhS//R0O+55JgM8C4Bx7ia+JlgcnOao=
-github.com/go-playground/validator/v10 v10.22.0/go.mod h1:dbuPbCMFw/DrkbEynArYaCwl3amGuJotoKCe95atGMM=
+github.com/go-playground/validator/v10 v10.27.0 h1:w8+XrWVMhGkxOaaowyKH35gFydVHOvC0/uWoy2Fzwn4=
+github.com/go-playground/validator/v10 v10.27.0/go.mod h1:I5QpIEbmr8On7W0TktmJAumgzX4CA1XNl4ZmDuVHKKo=
 github.com/go-sql-driver/mysql v1.8.1 h1:LedoTUt/eveggdHS9qUFC1EFSa8bU2+1pZjSRpvNJ1Y=
 github.com/go-sql-driver/mysql v1.8.1/go.mod h1:wEBSXgmK//2ZFJyE+qWnIsVGmvmEKlqwuVSjsCm7DZg=
 github.com/go-task/slim-sprig/v3 v3.0.0 h1:sUs3vkvUymDpBKi3qH1YSqBQk9+9D/8M2mN1vB6EwHI=
@@ -185,8 +185,10 @@ github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e h1:MRM5ITcdelLK2j1
 github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e/go.mod h1:XV66xRDqSt+GTGFMVlhk3ULuV0y9ZmzeVGR4mloJI3M=
 github.com/socious-io/goaccount v0.2.1 h1:8FvzrOz/ja3e/zO62UIZ3i9aqgCNUIlmfujXwQDuuIY=
 github.com/socious-io/goaccount v0.2.1/go.mod h1:f3HbHNpoNjxBhjqwqu2CzlUvNoNDgYAnJo2oq4Zz+kY=
-github.com/socious-io/gomq v0.1.6 h1:Dm7ZCKvQ3oEKiltXJ9TewChscVTwRBmLTFzz5O5AjzI=
-github.com/socious-io/gomq v0.1.6/go.mod h1:1id1vbRoza/j6BQGuXYYrzwbOOeq2Ii97U2bkwuSIoQ=
+github.com/socious-io/gomail v0.1.3 h1:pykLCOY3Iiao5yjc+7gJ035oUjtrDD6xIVSo8Y2Lng4=
+github.com/socious-io/gomail v0.1.3/go.mod h1:lxY5hsACBYClxcfbZN96eAmERsaNYZCNljWU9sd7Buw=
+github.com/socious-io/gomq v0.2.2-0.20250831194730-a20916bdb188 h1:KlVohAwMRwNC2yhXfmQgFuJu8simfv8QdCpQZ2NMayA=
+github.com/socious-io/gomq v0.2.2-0.20250831194730-a20916bdb188/go.mod h1:qx9vhqU48qydq0cTgv+mkZ9jL1ZWvHaYNqZ0xtclYec=
 github.com/socious-io/gopay v0.0.37 h1:G8KK2HYXJjBirOvIgowdjrfP68Un8UAGOL1UGOku5FU=
 github.com/socious-io/gopay v0.0.37/go.mod h1:VaAZ2FwcmyYN7DrQUKOdGH56MGNlTgBzWH0G4EtqhxA=
 github.com/socious-io/pkg_database v1.0.0 h1:y7VNH6IDE49qGBgiseCsMA0h3FRWvmR5jpwtMryl5ow=
