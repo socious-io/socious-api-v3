@@ -55,6 +55,7 @@ type Customer struct {
 	Email      string    `json:"email"`
 	Company    string    `json:"company"`
 	TicketType string    `json:"ticket_type"`
+	Force      bool      `json:"force"`
 }
 
 func Run() {
@@ -174,15 +175,18 @@ func customerConsumer() {
 			}
 
 		} else {
-			if existsOnEvent(user.Events) {
-				return
+			if !existsOnEvent(user.Events) {
+				user.Events = append(user.Events, event.ID.String())
+				if err := user.Upsert(context.Background()); err != nil {
+					log.Printf("Error on consumer customer: %v | data: %s ", err, string(msg.Data))
+					return
+				}
+			} else {
+				if !cus.Force {
+					return
+				}
 			}
 
-			user.Events = append(user.Events, event.ID.String())
-			if err := user.Upsert(context.Background()); err != nil {
-				log.Printf("Error on consumer customer: %v | data: %s ", err, string(msg.Data))
-				return
-			}
 		}
 
 		cus.UserID = user.ID

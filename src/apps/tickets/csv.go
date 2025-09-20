@@ -40,6 +40,7 @@ func readCSV(path string) []Customer {
 			Email:      strings.TrimSpace(row[0]),
 			Company:    strings.TrimSpace(row[3]),
 			TicketType: strings.TrimSpace(row[4]),
+			Force:      true,
 		}
 		customers = append(customers, customer)
 	}

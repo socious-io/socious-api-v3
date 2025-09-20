@@ -1,6 +1,7 @@
 SELECT c.*,
   row_to_json(id1.*) as provider,
   row_to_json(id2.*) as client,
+  (SELECT row_to_json(w.*) FROM wallets w WHERE w.user_id=c.client_id AND w.network=c.crypto_network AND w.testnet=false LIMIT 1) AS client_wallet,
   row_to_json(a.*) as applicant,
   row_to_json(p.*) as project,
   row_to_json(pay.*) as payment,
@@ -12,7 +13,7 @@ SELECT c.*,
         jsonb_agg(
           json_build_object(
           'id', m.id,
-          'url', m.url, 
+          'url', m.url,
           'filename', m.filename
           )
         )

@@ -3,6 +3,7 @@ package tickets
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/checkout/session"
@@ -10,18 +11,34 @@ import (
 )
 
 func fetchPaymentLinks() {
-	params := &stripe.PaymentLinkListParams{
-		Active: stripe.Bool(true),
-	}
+	params := &stripe.PaymentLinkListParams{}
+	params.Limit = stripe.Int64(500)
+	params.AddExpand("data.after_completion")
+	params.AddExpand("data.line_items")
+	params.AddExpand("data.application")
+	params.AddExpand("data.on_behalf_of")
 
-	// Optional: Set pagination parameters
-	params.Limit = stripe.Int64(10)
-
-	// List active payment links
 	i := paymentlink.List(params)
 	for i.Next() {
 		link := i.PaymentLink()
+		is2025 := false
+		desc := link.LineItems.Data[0].Description
+
+		if strings.Contains(desc, "2025") {
+			is2025 = true
+		}
+		fmt.Printf("\n\n\n\n")
+		fmt.Printf("\n\n\n\n")
+		fmt.Printf("-------------------------------------------------------------\n")
 		fmt.Printf("Payment Link ID: %s, URL: %s\n", link.ID, link.URL)
+		fmt.Printf("Link Description: %s --  status: %t --  detected as 2025: %t\n", desc, link.Active, is2025)
+		fmt.Printf("\n\n\n\n")
+		fmt.Printf("-------------------------------------------------------------\n")
+		fmt.Printf("\n\n\n\n")
+		if !is2025 && !link.Active {
+			continue
+		}
+
 		fetchSuccessfulPaymentsForLink(link.ID)
 	}
 
