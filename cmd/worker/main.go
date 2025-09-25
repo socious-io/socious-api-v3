@@ -35,7 +35,7 @@ func main() {
 		DefaultFrom:    "info@socious.io",
 		DefaultSubject: "Socious Work",
 		Templates:      config.Config.Sendgrid.Templates,
-		WorkerChannel:  "work/email",
+		WorkerChannel:  "email",
 		MessageQueue:   gomq.Mq,
 	})
 
