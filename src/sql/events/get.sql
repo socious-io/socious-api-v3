@@ -1,1 +1,1 @@
-SELECT * FROM events ORDER BY created_at DESC LIMIT 1
+SELECT * FROM socious_events ORDER BY created_at DESC LIMIT 1

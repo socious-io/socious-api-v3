@@ -56,6 +56,7 @@ type User struct {
 	IdentityVerified    bool           `db:"identity_verified" json:"identity_verified"`
 	IsContributor       *bool          `db:"is_contributor" json:"is_contributor"`
 	Events              pq.StringArray `db:"events" json:"events"`
+	Tags                pq.StringArray `db:"tags" json:"tags"`
 	Wallets             pq.StringArray `db:"wallets" json:"wallets"`
 
 	AvatarID   *uuid.UUID     `db:"avatar_id" json:"avatar_id"`
@@ -145,6 +146,7 @@ func (u *User) Upsert(ctx context.Context) error {
 		u.ImpactPoints,
 		u.IdentityVerified,
 		u.Events,
+		pq.Array(u.Tags),
 	)
 	if err != nil {
 		return err

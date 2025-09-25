@@ -168,6 +168,7 @@ func customerConsumer() {
 				Email:     accountUser.Email,
 				Username:  accountUser.Username,
 				Events:    pq.StringArray{event.ID.String()},
+				Tags:      pq.StringArray{cus.TicketType},
 			}
 			if err := user.Upsert(context.Background()); err != nil {
 				log.Printf("Error on consumer customer: %v | data: %s ", err, string(msg.Data))
@@ -175,14 +176,32 @@ func customerConsumer() {
 			}
 
 		} else {
-			if !existsOnEvent(user.Events) {
-				user.Events = append(user.Events, event.ID.String())
+			//user exists
+			var (
+				userIsNotOnEvent  bool = !existsOnEvent(user.Events)
+				userDoesntHaveTag bool = !haveTierTag(user.Tags, cus.TicketType)
+				userNeedsUpdate   bool = userIsNotOnEvent || userDoesntHaveTag
+			)
+
+			if userNeedsUpdate {
+				//user is not on event, add it
+				if userIsNotOnEvent {
+					user.Events = append(user.Events, event.ID.String())
+				}
+				//user doesnt have the tier, add it
+				if userDoesntHaveTag {
+					user.Tags = append(user.Tags, cus.TicketType)
+				}
+
 				if err := user.Upsert(context.Background()); err != nil {
 					log.Printf("Error on consumer customer: %v | data: %s ", err, string(msg.Data))
 					return
 				}
+
 			} else {
+				//user is on the event
 				if !cus.Force {
+					//customer not force, skip
 					return
 				}
 			}
@@ -222,12 +241,22 @@ func emailConsumer(cus *Customer) {
 		apiKey = *sendgridApiKey
 	}
 
-	sendEmail(apiKey, cus.Email, cus.Name, ticket)
+	sendTicketEmail(apiKey, cus.Email, cus.Name, ticket)
+	sendAttendingEmail(apiKey, cus.Email, cus.Name)
 }
 
 func existsOnEvent(events pq.StringArray) bool {
 	for _, e := range events {
 		if e == event.ID.String() {
+			return true
+		}
+	}
+	return false
+}
+
+func haveTierTag(tags pq.StringArray, tier string) bool {
+	for _, t := range tags {
+		if t == tier {
 			return true
 		}
 	}

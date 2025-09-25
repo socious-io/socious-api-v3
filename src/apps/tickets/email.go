@@ -10,16 +10,17 @@ import (
 )
 
 const (
-	EMAIL_TEMPLATE = "d-cc062f1a03d0450e9008ecdace2f2319"
+	TICKET_EMAIL_TEMPLATE    = "d-cc062f1a03d0450e9008ecdace2f2319"
+	ATTENDING_EMAIL_TEMPLATE = "d-e07fc7f75f2c4f7e9ffd97f48ae894d4"
 )
 
-func sendEmail(apikey, email, name, ticketPath string) {
+func sendTicketEmail(apikey, email, name, ticketPath string) {
 	from := mail.NewEmail("Socious", "info@socious.io")
 	to := mail.NewEmail(name, email)
 
 	message := mail.NewV3Mail()
 	message.SetFrom(from)
-	message.SetTemplateID(EMAIL_TEMPLATE)
+	message.SetTemplateID(TICKET_EMAIL_TEMPLATE)
 
 	personalization := mail.NewPersonalization()
 	personalization.AddTos(to)
@@ -43,6 +44,31 @@ func sendEmail(apikey, email, name, ticketPath string) {
 	attachment.Disposition = "attachment"
 
 	message.AddAttachment(attachment)
+
+	client := sendgrid.NewSendClient(apikey)
+	response, err := client.Send(message)
+	if err != nil {
+		log.Printf("Send error: %v \n", err)
+	} else {
+		log.Println(response.StatusCode)
+		log.Println(response.Body)
+		log.Println(response.Headers)
+	}
+}
+
+func sendAttendingEmail(apikey, email, name string) {
+	from := mail.NewEmail("Socious", "info@socious.io")
+	to := mail.NewEmail(name, email)
+
+	message := mail.NewV3Mail()
+	message.SetFrom(from)
+	message.SetTemplateID(ATTENDING_EMAIL_TEMPLATE)
+
+	personalization := mail.NewPersonalization()
+	personalization.AddTos(to)
+	personalization.SetDynamicTemplateData("name", name)
+
+	message.AddPersonalizations(personalization)
 
 	client := sendgrid.NewSendClient(apikey)
 	response, err := client.Send(message)
