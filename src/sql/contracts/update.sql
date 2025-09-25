@@ -1,4 +1,4 @@
-UPDATE contracts SET 
+UPDATE contracts SET
   name=$2,
   description=$3,
   total_amount=$4,
@@ -12,6 +12,7 @@ UPDATE contracts SET
   status=COALESCE($12, status),
   payment_id=COALESCE($13, payment_id),
   requirement_description=$14,
+  crypto_network=$15,
   updated_at=NOW()
 WHERE id=$1
 RETURNING *

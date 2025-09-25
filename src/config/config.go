@@ -20,6 +20,12 @@ type ConfigType struct {
 		SqlDir     string `mapstructure:"sqldir"`
 		Migrations string `mapstructure:"migrations"`
 	} `mapstructure:"database"`
+	Sendgrid struct {
+		Disabled  bool              `mapstructure:"disabled"`
+		URL       string            `mapstructure:"url"`
+		ApiKey    string            `mapstructure:"apikey"`
+		Templates map[string]string `mapstructure:"templates"`
+	} `mapstructure:"sendgrid"`
 	S3 struct {
 		AccessKeyId     string `mapstructure:"access_key_id"`
 		SecretAccessKey string `mapstructure:"secret_access_key"`
@@ -38,7 +44,8 @@ type ConfigType struct {
 		Chains gopay.Chains `mapstructure:"chains"`
 		Fiats  gopay.Fiats  `mapstructure:"fiats"`
 	} `mapstructure:"payment"`
-	GoAccounts goaccount.Config `mapstructure:"goaccounts"`
+	GoAccounts     goaccount.Config `mapstructure:"goaccounts"`
+	SendgridApiKey string           `mapstructure:"sendgrid_api_key"`
 }
 
 func Init(filename string) (*ConfigType, error) {

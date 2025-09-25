@@ -23,6 +23,7 @@ type Contract struct {
 	TotalAmount           float64                  `db:"total_amount" json:"total_amount"`
 	Currency              *Currency                `db:"currency" json:"currency"`
 	CryptoCurrency        *string                  `db:"crypto_currency" json:"crypto_currency"`
+	CryptoNetwork         *WalletNetwork           `db:"crypto_network" json:"crypto_network"`
 	CurrencyRate          float32                  `db:"currency_rate" json:"currency_rate"`
 	Commitment            int                      `db:"commitment" json:"commitment"`
 	CommitmentPeriod      ContractCommitmentPeriod `db:"commitment_period" json:"commitment_period"`
@@ -35,8 +36,9 @@ type Contract struct {
 	ProviderID uuid.UUID `db:"provider_id" json:"-"`
 	ClientID   uuid.UUID `db:"client_id" json:"-"`
 
-	Provider *Identity `db:"-" json:"provider"`
-	Client   *Identity `db:"-" json:"client"`
+	Provider     *Identity `db:"-" json:"provider"`
+	Client       *Identity `db:"-" json:"client"`
+	ClientWallet *Wallet   `db:"-" json:"client_wallet"`
 
 	ProviderFeedback bool `db:"provider_feedback" json:"provider_feedback"`
 	ClientFeedback   bool `db:"client_feedback" json:"client_feedback"`
@@ -55,6 +57,7 @@ type Contract struct {
 	PaymentJson          types.JSONText `db:"payment" json:"-"`
 	ProviderJson         types.JSONText `db:"provider" json:"-"`
 	ClientJson           types.JSONText `db:"client" json:"-"`
+	ClientWalletJson     types.JSONText `db:"client_wallet" json:"-"`
 	ProjectJson          types.JSONText `db:"project" json:"-"`
 	ApplicantJson        types.JSONText `db:"applicant" json:"-"`
 	RequirementFilesJson types.JSONText `db:"requirement_files" json:"requirement_files"`
@@ -87,6 +90,7 @@ func (c *Contract) Create(ctx context.Context) error {
 		c.ApplicantID,
 		c.ProviderID,
 		c.ClientID,
+		c.CryptoNetwork,
 	)
 
 	if err != nil {
@@ -127,6 +131,7 @@ func (c *Contract) Update(ctx context.Context, requirementFiles []uuid.UUID) err
 		c.Status,
 		c.PaymentID,
 		c.RequirementDescription,
+		c.CryptoNetwork,
 	)
 
 	if err != nil {

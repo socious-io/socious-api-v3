@@ -10,8 +10,9 @@ import (
 // Authorization
 
 type AuthForm struct {
-	RedirectURL string                 `json:"redirect_url" validate:"required"`
-	AuthMode    goaccount.AuthModeType `json:"auth_mode" validate:"required"`
+	RedirectURL   string                 `json:"redirect_url" validate:"required"`
+	AuthMode      goaccount.AuthModeType `json:"auth_mode" validate:"required"`
+	OrgOnboarding bool                   `json:"org_onboarding" validate:"required"`
 }
 
 type SessionForm struct {
@@ -126,8 +127,8 @@ type OrganizationUpdateForm struct {
 	Industry          *string    `db:"industry" json:"industry"`
 	Did               *string    `db:"did" json:"did"`
 }
-
-type SyncForm struct {
-	Organizations []goaccount.Organization `json:"organizations"`
-	User          goaccount.User           `json:"user" validate:"required"`
+type WalletForm struct {
+	Address string               `json:"address"`
+	Network models.WalletNetwork `json:"network"`
+	Testnet bool                 `json:"testnet"`
 }

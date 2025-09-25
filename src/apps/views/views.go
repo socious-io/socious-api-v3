@@ -8,6 +8,5 @@ func Init(r *gin.Engine) {
 	contractsGroup(r)
 	usersGroup(r)
 	organizationsGroup(r)
-	syncGroup(r)
 	identitiesGroup(r)
 }
