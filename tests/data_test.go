@@ -12,12 +12,18 @@ var (
 
 	usersData = []*models.User{
 		{
-			Username: "test",
-			Email:    "test@test.com",
+			Username:         "test",
+			Email:            "test@test.com",
+			IdentityVerified: true,
+			Events:           []string{},
+			Tags:             []string{},
 		},
 		{
-			Username: "test2",
-			Email:    "test2@test.com",
+			Username:         "test2",
+			Email:            "test2@test.com",
+			IdentityVerified: true,
+			Events:           []string{},
+			Tags:             []string{},
 		},
 	}
 

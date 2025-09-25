@@ -242,7 +242,7 @@ func emailConsumer(cus *Customer) {
 	}
 
 	sendTicketEmail(apiKey, cus.Email, cus.Name, ticket)
-	sendAttendingEmail(apiKey, cus.Email, cus.Name)
+	// sendAttendingEmail(apiKey, cus.Email, cus.Name)
 }
 
 func existsOnEvent(events pq.StringArray) bool {
