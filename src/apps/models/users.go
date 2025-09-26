@@ -57,7 +57,7 @@ type User struct {
 	IsContributor       *bool          `db:"is_contributor" json:"is_contributor"`
 	Events              pq.StringArray `db:"events" json:"events"`
 	Tags                pq.StringArray `db:"tags" json:"tags"`
-	Wallets             pq.StringArray `db:"wallets" json:"wallets"`
+	Wallets             Wallets        `db:"wallets" json:"wallets"`
 
 	AvatarID   *uuid.UUID     `db:"avatar_id" json:"avatar_id"`
 	Avatar     *Media         `db:"-" json:"avatar"`
