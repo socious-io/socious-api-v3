@@ -62,6 +62,12 @@ func fetchSuccessfulPaymentsForLink(paymentLinkID string) {
 	i := session.List(params)
 	for i.Next() {
 		s := i.CheckoutSession()
+
+		// skip already processed session
+		if s.Metadata["processed"] == "true" {
+			continue
+		}
+
 		fmt.Printf("Session ID: %s\n", s.ID)
 		customer := new(Customer)
 		// Get customer information
@@ -70,28 +76,38 @@ func fetchSuccessfulPaymentsForLink(paymentLinkID string) {
 		}
 
 		if s.CustomerDetails != nil {
-			customer.Name = s.CustomerDetails.Name
 			customer.Email = s.CustomerDetails.Email
 		}
 
 		if s.Customer != nil {
-			customer.Name = s.Customer.Name
 			customer.Email = s.Customer.Email
 		}
 
-		for _, field := range s.CustomFields {
-			if field.Key == "companyname" {
-				customer.Company = field.Text.Value
-			}
+		if len(s.CustomFields) > 0 && s.CustomFields[0].Text != nil {
+			customer.Name = s.CustomFields[0].Text.Value
+		}
+		if len(s.CustomFields) > 1 && s.CustomFields[1].Text != nil {
+			customer.Company = s.CustomFields[1].Text.Value
 		}
 
 		customer.TicketType = linkType(paymentLinkID)
+		customer.Force = true
 
 		fmt.Printf("Customer Name: %s -- ", customer.Name)
 		fmt.Printf("Customer Company: %s -- ", customer.Company)
 		fmt.Printf("Customer Ticket Type: %s\n", customer.TicketType)
 
 		publish(consumerTitle(CUSTOMER), customer)
+
+		// Mark session as processed by adding metadata (optional)
+		_, err := session.Update(s.ID, &stripe.CheckoutSessionParams{
+			Metadata: map[string]string{
+				"processed": "true",
+			},
+		})
+		if err != nil {
+			log.Printf("Failed to update session metadata: %v", err)
+		}
 
 	}
 

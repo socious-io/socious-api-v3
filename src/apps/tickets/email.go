@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	TICKET_EMAIL_TEMPLATE    = "d-cc062f1a03d0450e9008ecdace2f2319"
+	TICKET_EMAIL_TEMPLATE    = "d-c706878f05bd4d22be6a5eb22b5a4dc8"
 	ATTENDING_EMAIL_TEMPLATE = "d-e07fc7f75f2c4f7e9ffd97f48ae894d4"
 )
 

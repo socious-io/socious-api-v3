@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"socious/src/apps/models"
+	"socious/src/apps/utils"
 	"socious/src/config"
 	"strings"
 	"time"
@@ -22,9 +23,9 @@ import (
 
 var (
 	configPath          = flag.String("c", "config.yml", "Path to the configuration file")
-	mode                = flag.String("m", "", "Operation mode: producer, customer-consumer, email-consumer, pdf-consumer, publish-customer, csv")
-	ticketPath          = flag.String("t", "", "Path to ticket template")
-	ticketsGeneratedDir = flag.String("o", "", "Directory of tickets")
+	mode                = flag.String("m", "", "Operation mode: customer-consumer, email-consumer, pdf-consumer, publish-customer, csv-reader, csv-verify")
+	ticketPath          = flag.String("t", "ticket.pdf", "Path to ticket template")
+	ticketsGeneratedDir = flag.String("o", "tickets", "Directory of tickets")
 	sendgridApiKey      = flag.String("ak", "", "Sendgrid api key")
 	csvPath             = flag.String("csv", "", "Path to csv file")
 
@@ -39,11 +40,12 @@ var (
 )
 
 const (
-	PUBLISH  = "publish-customer"
-	CUSTOMER = "customer-consumer"
-	EMAIL    = "email-consumer"
-	PDF      = "pdf-consumer"
-	CSV      = "csv-reader"
+	PUBLISH   = "publish-customer"
+	CUSTOMER  = "customer-consumer"
+	EMAIL     = "email-consumer"
+	PDF       = "pdf-consumer"
+	CSV       = "csv-reader"
+	CSVVERIFY = "csv-verify"
 
 	profileAddress = "https://app.socious.io/profile/users/%s/view"
 )
@@ -98,6 +100,8 @@ func Run() {
 	}
 
 	switch *mode {
+	case CSVVERIFY:
+		verifyCSV()
 	case CSV:
 		csvReader()
 	case PUBLISH:
@@ -122,6 +126,20 @@ func publishCustomer() {
 		Company:    *company,
 		TicketType: *ticketType,
 	})
+}
+
+func verifyCSV() {
+	errs := verifyCustomers(readCSV(*csvPath))
+	if len(errs) != 0 {
+		log.Printf("CSV verification failed, details: \n\n")
+		for _, err := range errs {
+			log.Printf("%v\n", err)
+		}
+		log.Fatalf("\nTotal errors: %d\n", len(errs))
+		return
+	}
+
+	log.Printf("CSV verification successful: %d records found\n", len(readCSV(*csvPath)))
 }
 
 func csvReader() {
@@ -223,9 +241,12 @@ func customerConsumer() {
 }
 
 func pdfConsumer(cus *Customer) bool {
+	// Ensure output directory exists
+	utils.CreateFolders(*ticketsGeneratedDir, []string{cus.TicketType})
+
 	return PdfGenerator(
 		*ticketPath,
-		fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username),
+		fmt.Sprintf("%s/%s/%s.pdf", *ticketsGeneratedDir, cus.TicketType, cus.Username),
 		cus.Name,
 		fmt.Sprintf(profileAddress, cus.Username),
 		cus.Company,
@@ -234,7 +255,7 @@ func pdfConsumer(cus *Customer) bool {
 }
 
 func emailConsumer(cus *Customer) {
-	ticket := fmt.Sprintf("%s/%s.pdf", *ticketsGeneratedDir, cus.Username)
+	ticket := fmt.Sprintf("%s/%s/%s.pdf", *ticketsGeneratedDir, cus.TicketType, cus.Username)
 
 	apiKey := config.Config.SendgridApiKey
 	if *sendgridApiKey != "" {
