@@ -83,6 +83,36 @@ func (User) FetchQuery() string {
 	return "users/fetch"
 }
 
+type PublicUser struct {
+	ID               uuid.UUID      `db:"id" json:"id"`
+	FirstName        *string        `db:"first_name" json:"first_name"`
+	LastName         *string        `db:"last_name" json:"last_name"`
+	Username         string         `db:"username" json:"username"`
+	Mission          *string        `db:"mission" json:"mission"`
+	Bio              *string        `db:"bio" json:"-"`
+	ImpactPoints     float32        `db:"impact_points" json:"impact_points"`
+	SocialCauses     pq.StringArray `db:"social_causes" json:"social_causes"` // social_causes_type[] as typ
+	Followers        int            `db:"followers" json:"followers"`
+	Followings       int            `db:"followings" json:"followings"`
+	Skills           pq.StringArray `db:"skills" json:"skills"`
+	OpenToWork       bool           `db:"open_to_work" json:"open_to_work"`
+	OpenToVolunteer  bool           `db:"open_to_volunteer" json:"open_to_volunteer"`
+	IdentityVerified bool           `db:"identity_verified" json:"identity_verified"`
+	Events           pq.StringArray `db:"events" json:"events"`
+	Tags             pq.StringArray `db:"tags" json:"tags"`
+
+	AvatarID   *uuid.UUID     `db:"avatar_id" json:"avatar_id"`
+	Avatar     *Media         `db:"-" json:"avatar"`
+	AvatarJson types.JSONText `db:"avatar" json:"-"`
+
+	CoverID    *uuid.UUID     `db:"cover_id" json:"cover_id"`
+	Cover      *Media         `db:"-" json:"cover"`
+	CoverJson  types.JSONText `db:"cover" json:"-"`
+	CoverImage *uuid.UUID     `db:"cover_image" json:"-"` //FIXME: temporary: we should unify it with other platforms
+
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+}
+
 func GetTransformedUser(ctx context.Context, user goaccount.User) *User {
 	u := new(User)
 	utils.Copy(user, u)
@@ -205,6 +235,14 @@ func (u *User) Delete(ctx context.Context, reason string) error {
 func GetUser(id uuid.UUID) (*User, error) {
 	u := new(User)
 	if err := database.Fetch(u, id.String()); err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func GetUserByUsername(username string) (*User, error) {
+	u := new(User)
+	if err := database.Get(u, "users/fetch_by_username", username); err != nil {
 		return nil, err
 	}
 	return u, nil
