@@ -136,6 +136,8 @@ func linkType(linkID string) string {
 		return "Media pass"
 	case "plink_1S5IrSFiHSKRe5D1jALPVk9b":
 		return "Stage"
+	case "plink_1SDISYFiHSKRe5D1pHeQaX0i":
+		return "Exhibitor"
 	default:
 		return "Standard"
 	}
