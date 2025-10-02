@@ -2,6 +2,8 @@ package models
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -17,6 +19,8 @@ type Wallet struct {
 	CreatedAt time.Time     `json:"created_at"`
 	UpdatedAt time.Time     `json:"updated_at"`
 }
+
+type Wallets []Wallet
 
 func (w *Wallet) Upsert(ctx context.Context) error {
 	if w.ID == uuid.Nil {
@@ -42,4 +46,16 @@ func (w *Wallet) Upsert(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+func (w *Wallets) Scan(src interface{}) error {
+	if src == nil {
+		*w = []Wallet{}
+		return nil
+	}
+	bytes, ok := src.([]byte)
+	if !ok {
+		return fmt.Errorf("expected []byte, got %T", src)
+	}
+	return json.Unmarshal(bytes, w)
 }
